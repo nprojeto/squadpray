@@ -55,7 +55,9 @@ const links = computed(() => [
         </button>
 
         <NuxtLink :to="logado ? '/painel' : '/'" class="flex items-center gap-2 shrink-0">
-          <EmojiCristao codigo="terco" :tamanho="38" />
+          <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
+            <EmojiCristao codigo="oracao" :tamanho="22" />
+          </span>
           <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">EleveSquad</span>
         </NuxtLink>
 
@@ -71,11 +73,6 @@ const links = computed(() => [
         </nav>
 
         <div class="flex items-center gap-1.5 ml-auto md:ml-0">
-          <button
-            class="hidden md:inline-flex btn-fantasma !px-2.5"
-            :aria-label="escuro ? 'Tema claro' : 'Tema escuro'" @click="alternar"
-          >{{ escuro ? "☀" : "☾" }}</button>
-
           <NuxtLink v-if="logado" to="/notificacoes" class="btn-fantasma !px-2.5 relative" aria-label="Notificações">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -100,6 +97,9 @@ const links = computed(() => [
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
+              <button class="btn-fantasma w-full justify-start" @click.stop="alternar">
+                {{ escuro ? "☀ Tema claro" : "☾ Tema escuro" }}
+              </button>
               <button class="btn-fantasma w-full justify-start" @click="sair">Sair</button>
             </div>
           </div>
@@ -114,7 +114,7 @@ const links = computed(() => [
         <aside class="absolute left-0 top-0 bottom-0 w-72 max-w-[85%] bg-papel border-r-2 border-tinta
                       shadow-bloco flex flex-col">
           <div class="flex items-center justify-between gap-3 px-5 h-16 border-b-2 border-tinta">
-            <span class="font-display text-xl uppercase">Menu</span>
+            <span class="font-display text-xl uppercase tracking-tight">EleveSquad</span>
             <button
               class="w-10 h-10 grid place-items-center border-2 border-tinta rounded-lg bg-cartao"
               aria-label="Fechar menu" @click="gaveta = false"
@@ -124,14 +124,6 @@ const links = computed(() => [
               </svg>
             </button>
           </div>
-
-          <NuxtLink to="/perfil" class="px-5 py-4 flex items-center gap-3 border-b-2 border-dashed border-risco">
-            <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="44" :selo="temSelo" :streak="melhorStreak" />
-            <div class="min-w-0">
-              <p class="font-bold truncate">{{ perfil?.nome }}</p>
-              <p class="font-mono text-xs">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }} pts</p>
-            </div>
-          </NuxtLink>
 
           <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
             <NuxtLink
@@ -149,12 +141,6 @@ const links = computed(() => [
             </NuxtLink>
           </nav>
 
-          <div class="p-3 border-t-2 border-tinta flex gap-2">
-            <button class="btn-vidro flex-1 !py-2" @click="alternar">
-              {{ escuro ? "☀ Claro" : "☾ Escuro" }}
-            </button>
-            <button class="btn-fantasma" @click="sair">Sair</button>
-          </div>
         </aside>
       </div>
     </Teleport>

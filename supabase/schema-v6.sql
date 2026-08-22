@@ -1,16 +1,32 @@
 -- ============================================================
 --  ELEVESQUAD — ATUALIZAÇÃO 6
---  Novos nomes das reações, alinhados ao catálogo de ícones
+--  Favoritos da rede
 --  Rodar no SQL Editor do Supabase
 -- ============================================================
 
-update public.reaction_emojis set nome = 'Amém',          descricao = 'Concordo e recebo'        where codigo = 'amem';
-update public.reaction_emojis set nome = 'Intercessão',   descricao = 'Estou orando por isso'    where codigo = 'oracao';
-update public.reaction_emojis set nome = 'Fé',            descricao = 'Cristo no centro'         where codigo = 'cruz';
-update public.reaction_emojis set nome = 'Paz',           descricao = 'Paz e Espírito Santo'     where codigo = 'pomba';
-update public.reaction_emojis set nome = 'Vigília',       descricao = 'Isso me manteve acordado' where codigo = 'fogo';
-update public.reaction_emojis set nome = 'Palavra',       descricao = 'A Escritura me falou'     where codigo = 'luz';
-update public.reaction_emojis set nome = 'Glória',        descricao = 'Glória ao Rei'            where codigo = 'coroa';
-update public.reaction_emojis set nome = 'Multiplicação', descricao = 'Isso vai render fruto'    where codigo = 'semente';
+create table if not exists public.favoritos (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  alvo_id    uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (user_id, alvo_id),
+  constraint favorito_nao_eu check (user_id <> alvo_id)
+);
+
+create index if not exists idx_favoritos_user on public.favoritos(user_id);
+
+alter table public.favoritos enable row level security;
+
+drop policy if exists "vejo meus favoritos" on public.favoritos;
+create policy "vejo meus favoritos" on public.favoritos for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "favorito" on public.favoritos;
+create policy "favorito" on public.favoritos for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "desfavorito" on public.favoritos;
+create policy "desfavorito" on public.favoritos for delete to authenticated
+  using (user_id = auth.uid());
 
 -- FIM

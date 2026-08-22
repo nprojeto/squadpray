@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api, enviarImagem, TIPOS_SQUAD, ICONE_TIPO, dataBR, hojeISO } from "~/lib/api";
+import { api, enviarImagem, TIPOS_SQUAD, dataBR, hojeISO } from "~/lib/api";
 
 const rota = useRoute();
 const id = rota.params.id as string;

@@ -83,16 +83,6 @@ export const TIPOS_SQUAD: Record<TipoSquad, { nome: string; frequencia: string; 
   gdc:             { nome: "GDC",             frequencia: "semanal", verbo: "enviar a foto do GDC" },
 };
 
-export const ICONE_TIPO: Record<TipoSquad, string> = {
-  leitura_biblica: "biblia",
-  livros: "rolo",
-  devocional: "vela",
-  oracao: "terco",
-  jejum: "pao",
-  celebracao: "sinos",
-  gdc: "peixes",
-};
-
 export const ehSemanal = (t: TipoSquad) => t === "celebracao" || t === "gdc";
 export const precisaObjetivo = (t: TipoSquad) => t === "oracao" || t === "jejum";
 
@@ -158,7 +148,10 @@ export const api = {
   excluirSquad: (id: string) => chamar(`/squads/${id}`, { metodo: "DELETE" }),
   votarExclusao: (id: string, aprovado: boolean) =>
     chamar(`/squads/${id}/exclusao/votar`, { metodo: "POST", corpo: { aprovado } }),
-  rede: (q = "") => chamar(`/rede?q=${encodeURIComponent(q)}`),
+  rede: (q = "", lista: "geral" | "favoritos" = "geral") =>
+    chamar(`/rede?q=${encodeURIComponent(q)}&lista=${lista}`),
+  favoritar: (id: string, favorito: boolean) =>
+    chamar(`/rede/favoritar/${id}`, { metodo: "POST", corpo: { favorito } }),
   verPrayer: (id: string) => chamar(`/prayer/${id}`),
 
   publicarArtigo: (squadId: string, dados: {

@@ -656,11 +656,63 @@ Deno.serve(async (req) => {
     }
 
     // ============ REDE ============
-    if (seg[0] === "rede" && metodo === "GET") {
+    if (seg[0] === "rede" && !seg[1] && metodo === "GET") {
       const termo = url.searchParams.get("q") ?? "";
+      const lista = url.searchParams.get("lista") ?? "geral";
+
+      const { data: eu } = await db.from("profiles")
+        .select("perfil_publico").eq("id", user.id).maybeSingle();
+      const souPublico = eu?.perfil_publico !== false;
+
+      const { data: favs } = await db.from("favoritos").select("alvo_id").eq("user_id", user.id);
+      const idsFav = (favs ?? []).map((f: any) => f.alvo_id);
+
+      if (lista === "favoritos") {
+        if (!idsFav.length) return ok({ prayers: [], sou_publico: souPublico });
+        const { data } = await db.from("profiles")
+          .select("id, nome, avatar_url, bio, igreja, pontos_total, perfil_publico")
+          .in("id", idsFav).order("nome");
+        const filtrados = (data ?? [])
+          .filter((p: any) => !termo || `${p.nome} ${p.igreja ?? ""}`.toLowerCase().includes(termo.toLowerCase()))
+          .map((p: any) => ({ ...p, favorito: true }));
+        return ok({ prayers: filtrados, sou_publico: souPublico });
+      }
+
       const { data, error } = await db.rpc("buscar_prayers", { termo });
       if (error) return erro(error.message);
-      return ok({ prayers: (data ?? []).filter((p: any) => p.id !== user.id) });
+      const prayers = (data ?? [])
+        .filter((p: any) => p.id !== user.id)
+        .map((p: any) => ({ ...p, favorito: idsFav.includes(p.id) }));
+      return ok({ prayers, sou_publico: souPublico });
+    }
+
+    // POST /rede/favoritar/:id  { favorito: true|false }
+    if (seg[0] === "rede" && seg[1] === "favoritar" && seg[2] && metodo === "POST") {
+      const alvo = seg[2];
+      if (alvo === user.id) return erro("Você não pode favoritar a si mesmo.");
+
+      const { data: eu } = await db.from("profiles")
+        .select("perfil_publico").eq("id", user.id).maybeSingle();
+      if (eu?.perfil_publico === false) {
+        return erro("Deixe seu perfil visível para poder favoritar outras pessoas.");
+      }
+
+      const { data: alvoPerfil } = await db.from("profiles")
+        .select("perfil_publico, nome").eq("id", alvo).maybeSingle();
+      if (!alvoPerfil) return erro("Prayer não encontrado.", 404);
+      if (alvoPerfil.perfil_publico === false) {
+        return erro(`${alvoPerfil.nome} está com o perfil fechado e não pode ser favoritado.`);
+      }
+
+      if (body.favorito === false) {
+        await db.from("favoritos").delete().eq("user_id", user.id).eq("alvo_id", alvo);
+        return ok({ favorito: false });
+      }
+
+      const { error } = await db.from("favoritos")
+        .upsert({ user_id: user.id, alvo_id: alvo }, { onConflict: "user_id,alvo_id" });
+      if (error) return erro(error.message);
+      return ok({ favorito: true });
     }
 
     if (seg[0] === "prayer" && seg[1] && metodo === "GET") {

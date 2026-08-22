@@ -60,7 +60,7 @@ async function salvar() {
 
 <template>
   <div class="max-w-2xl">
-    <span class="rotulo text-xl">quem você é por aqui</span>
+    <span class="rotulo text-xl">um pouquinho sobre mim</span>
     <h1 class="text-5xl sm:text-6xl mt-2">Meu perfil</h1>
 
     <section class="painel p-6 sm:p-7 mt-8">
@@ -90,12 +90,9 @@ async function salvar() {
         </div>
       </div>
 
-      <div class="chumbo mt-6 pt-5 flex items-center justify-between gap-4">
-        <div>
-          <span class="rotulo">pontos</span>
-          <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
-        </div>
-        <NuxtLink to="/historico" class="btn-vidro">Ver histórico</NuxtLink>
+      <div class="chumbo mt-6 pt-5">
+        <span class="rotulo">pontos</span>
+        <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
       </div>
     </section>
 
