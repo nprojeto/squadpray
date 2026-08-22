@@ -351,6 +351,14 @@ Deno.serve(async (req) => {
         if (!periodo) return erro("Período não encontrado.");
         if (periodo.autor_id !== user.id) return erro("Hoje não é a sua vez na escala.", 403);
 
+        const hoje = new Date().toISOString().slice(0, 10);
+        if (periodo.data_inicio > hoje) {
+          return erro("Esse dia ainda não chegou. Volte quando for a data dele.");
+        }
+        if (periodo.data_fim < hoje) {
+          return erro("Esse dia já passou e não pode mais receber artigo.");
+        }
+
         const { data: post, error } = await db.from("posts").insert({
           squad_id: squadId, period_id, autor_id: user.id, titulo, referencia, conteudo: texto,
         }).select().single();
@@ -369,8 +377,23 @@ Deno.serve(async (req) => {
       if (seg[2] === "foto" && metodo === "POST") {
         const { period_id, foto_url, legenda } = body;
         if (!period_id || !foto_url) return erro("Envie a foto e informe a semana.");
+        const { data: periodoFoto } = await db.from("squad_periods")
+          .select("data_inicio, data_fim").eq("id", period_id).eq("squad_id", squadId).single();
+        if (!periodoFoto) return erro("Semana não encontrada.");
+        const hojeF = new Date().toISOString().slice(0, 10);
+        if (periodoFoto.data_inicio > hojeF) {
+          return erro("Essa semana ainda não começou. Volte na segunda-feira dela.");
+        }
+        if (periodoFoto.data_fim < hojeF) {
+          return erro("Essa semana já fechou e não recebe mais fotos.");
+        }
+
+        const texto = String(legenda ?? "").trim();
+        if (texto.length < 200) {
+          return erro(`Conte o que você percebeu em pelo menos 200 caracteres. Faltam ${200 - texto.length}.`);
+        }
         const { data: foto, error } = await db.from("weekly_photos").insert({
-          squad_id: squadId, period_id, user_id: user.id, foto_url, legenda,
+          squad_id: squadId, period_id, user_id: user.id, foto_url, legenda: texto,
         }).select().single();
         if (error) return erro(error.message.includes("duplicate") ? "Você já enviou sua foto desta semana." : error.message);
 

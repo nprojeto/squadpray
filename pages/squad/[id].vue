@@ -73,6 +73,9 @@ const postAtual = computed(() =>
 
 const minhaVez = computed(() => periodoAtual.value?.autor_id === perfil.value?.id);
 
+const proximoPeriodo = computed(() =>
+  periodos.value.find((p: any) => p.data_inicio > hojeISO()));
+
 const minhaFoto = computed(() =>
   dados.value?.fotos?.find((f: any) => f.period_id === periodoAtual.value?.id && f.user_id === perfil.value?.id));
 
@@ -194,9 +197,18 @@ async function ativar() {
   catch (e: any) { erro.value = e.message; }
 }
 
+const faltamLegenda = computed(() => Math.max(0, 200 - legenda.value.trim().length));
+const eFoto = ref<string | null>(null);
+const eLegenda = ref<string | null>(null);
+
 async function mandarFoto() {
-  if (!arquivo.value) { erro.value = "Escolha uma foto."; return; }
-  erro.value = null; enviandoFoto.value = true;
+  erro.value = null; eFoto.value = null; eLegenda.value = null;
+  if (!arquivo.value) { eFoto.value = "Escolha a foto que comprova sua presença."; return; }
+  if (faltamLegenda.value > 0) {
+    eLegenda.value = `Conte o que você percebeu em pelo menos 200 caracteres. Faltam ${faltamLegenda.value}.`;
+    return;
+  }
+  enviandoFoto.value = true;
   try {
     const url = await enviarImagem(arquivo.value, id);
     await api.enviarFoto(id, { period_id: periodoAtual.value.id, foto_url: url, legenda: legenda.value || undefined });
@@ -360,8 +372,16 @@ function jaConfirmei(f: any) {
 
       <!-- HOJE -->
       <section v-if="aba === 'hoje'" class="mt-8 space-y-6">
-        <div v-if="!periodoAtual" class="painel p-8 text-center text-fumaca">
-          Nenhum período em aberto hoje.
+        <div v-if="!periodoAtual" class="painel p-8 text-center">
+          <EmojiCristao codigo="luz" :tamanho="42" class="mx-auto" />
+          <p class="font-display text-2xl mt-3">Nada para fazer hoje</p>
+          <p class="font-semibold text-fumaca text-sm mt-2">
+            <template v-if="proximoPeriodo">
+              O próximo {{ semanal ? 'ciclo' : 'dia' }} abre em {{ dataBR(proximoPeriodo.data_inicio) }}.
+              Não dá para adiantar.
+            </template>
+            <template v-else>O ciclo deste squad já terminou.</template>
+          </p>
         </div>
 
         <!-- DIÁRIO -->
@@ -446,21 +466,37 @@ function jaConfirmei(f: any) {
               {{ dataBR(periodoAtual.data_inicio) }} a {{ dataBR(periodoAtual.data_fim) }}
             </p>
 
-            <form v-if="!minhaFoto" class="mt-6 space-y-4" @submit.prevent="mandarFoto">
-              <h2 class="text-2xl">Envie sua foto da semana</h2>
-              <p class="text-fumaca text-sm">
-                Uma foto que comprove sua presença. Depois todos do squad confirmam.
+            <form v-if="!minhaFoto" novalidate class="mt-6 space-y-4" @submit.prevent="mandarFoto">
+              <h2 class="text-3xl">Envie sua foto da semana</h2>
+              <p class="font-semibold text-sm text-fumaca">
+                Uma foto que comprove sua presença e o que ficou de
+                {{ squad.tipo === 'gdc' ? 'GDC' : 'celebração' }} para você. Depois o squad confirma.
               </p>
+
               <div>
                 <label for="f">Foto</label>
                 <input id="f" type="file" accept="image/*"
-                  @change="arquivo = ($event.target as HTMLInputElement).files?.[0] ?? null" />
+                  :class="eFoto ? '!border-laranja' : ''"
+                  @change="arquivo = ($event.target as HTMLInputElement).files?.[0] ?? null; eFoto = null" />
+                <CampoErro :mensagem="eFoto" />
               </div>
+
               <div>
-                <label for="l">Legenda (opcional)</label>
-                <input id="l" v-model="legenda" placeholder="Onde foi, com quem" />
+                <label for="l">O que você percebeu</label>
+                <textarea
+                  id="l" v-model="legenda" rows="7"
+                  :class="eLegenda ? '!border-laranja' : ''"
+                  placeholder="O que Deus falou com você ali, o que te marcou, o que fica para o squad."
+                  @input="eLegenda = null"
+                />
+                <p class="text-xs font-semibold mt-1.5" :class="faltamLegenda ? 'text-fumaca' : 'text-verde'">
+                  <span class="font-mono">{{ legenda.trim().length }}</span> caracteres ·
+                  {{ faltamLegenda ? `faltam ${faltamLegenda} para o mínimo` : 'mínimo atingido' }}
+                </p>
+                <CampoErro :mensagem="eLegenda" />
               </div>
-              <button class="btn-ouro w-full" :disabled="enviandoFoto">
+
+              <button class="btn-ouro w-full" :disabled="enviandoFoto || faltamLegenda > 0 || !arquivo">
                 {{ enviandoFoto ? "Enviando…" : "Enviar minha foto" }}
               </button>
             </form>
@@ -475,8 +511,14 @@ function jaConfirmei(f: any) {
                 <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
                   <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover border-b-2 border-tinta" />
                   <div class="p-4">
-                    <p class="text-sm">{{ f.profiles?.nome }}</p>
-                    <p v-if="f.legenda" class="text-xs text-fumaca mt-1">{{ f.legenda }}</p>
+                    <p class="font-bold text-sm">{{ f.profiles?.nome }}</p>
+                    <p v-if="f.legenda" class="text-sm font-semibold mt-2 leading-relaxed">
+                      {{ abertoId === f.id ? f.legenda : resumo(f.legenda, 140) }}
+                    </p>
+                    <button
+                      v-if="f.legenda && f.legenda.length > 140"
+                      class="btn-fantasma !px-0 !py-1 text-xs" @click="alternarArtigo(f.id)"
+                    >{{ abertoId === f.id ? "Mostrar menos" : "Ler tudo" }}</button>
                     <p class="text-xs text-fumaca mt-2 font-mono">
                       {{ f.photo_confirmations?.length ?? 0 }} de {{ membros.length - 1 }} confirmaram
                     </p>
@@ -515,8 +557,15 @@ function jaConfirmei(f: any) {
           <figure v-for="f in dados.fotos" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
             <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-40 object-cover border-b-2 border-tinta" />
             <figcaption class="p-3 text-xs">
-              <span class="text-tinta">{{ f.profiles?.nome }}</span>
+              <span class="font-bold">{{ f.profiles?.nome }}</span>
               <span class="text-fumaca block mt-0.5">{{ dataBR(f.created_at) }}</span>
+              <span v-if="f.legenda" class="block mt-2 font-semibold leading-relaxed">
+                {{ abertoId === f.id ? f.legenda : resumo(f.legenda, 110) }}
+              </span>
+              <button
+                v-if="f.legenda && f.legenda.length > 110"
+                class="btn-fantasma !px-0 !py-1 text-xs" @click="alternarArtigo(f.id)"
+              >{{ abertoId === f.id ? "Mostrar menos" : "Ler tudo" }}</button>
             </figcaption>
           </figure>
         </div>

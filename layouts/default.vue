@@ -16,8 +16,6 @@ const links = computed(() => [
   { para: "/rede", texto: "Rede", contador: 0 },
   { para: "/convites", texto: "Convites", contador: convitesPendentes.value },
   { para: "/historico", texto: "Histórico", contador: 0 },
-  { para: "/notificacoes", texto: "Notificações", contador: naoLidas.value },
-  { para: "/perfil", texto: "Meu perfil", contador: 0 },
 ]);
 </script>
 
@@ -36,7 +34,7 @@ const links = computed(() => [
             <path d="M3 6h18M3 12h18M3 18h18" />
           </svg>
           <span
-            v-if="convitesPendentes + naoLidas"
+            v-if="convitesPendentes"
             class="absolute translate-x-4 -translate-y-4 w-3 h-3 rounded-full bg-laranja border-2 border-tinta"
           />
         </button>
@@ -49,7 +47,7 @@ const links = computed(() => [
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
-          <NuxtLink v-for="l in links.slice(0, 4)" :key="l.para" :to="l.para" class="btn-fantasma relative">
+          <NuxtLink v-for="l in links" :key="l.para" :to="l.para" class="btn-fantasma relative">
             {{ l.texto }}
             <span
               v-if="l.contador"
@@ -65,7 +63,7 @@ const links = computed(() => [
             :aria-label="escuro ? 'Tema claro' : 'Tema escuro'" @click="alternar"
           >{{ escuro ? "☀" : "☾" }}</button>
 
-          <NuxtLink v-if="logado" to="/notificacoes" class="hidden md:inline-flex btn-fantasma !px-2.5 relative" aria-label="Notificações">
+          <NuxtLink v-if="logado" to="/notificacoes" class="btn-fantasma !px-2.5 relative" aria-label="Notificações">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
@@ -79,18 +77,16 @@ const links = computed(() => [
 
           <div v-if="logado" class="relative">
             <button
-              class="flex items-center gap-2 rounded-full border-2 border-tinta bg-cartao pl-1 pr-2.5 py-1 hover:bg-amarelo transition"
-              @click.stop="contaAberta = !contaAberta"
+              class="rounded-full border-2 border-tinta bg-cartao p-1 hover:bg-amarelo transition"
+              aria-label="Minha conta" @click.stop="contaAberta = !contaAberta"
             >
-              <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="30" :selo="temSelo" :streak="melhorStreak" />
-              <span class="font-mono text-xs font-bold">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
+              <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="32" />
             </button>
 
             <div v-if="contaAberta" class="absolute right-0 mt-2 w-56 painel p-2 z-50">
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
-              <NuxtLink to="/notificacoes" class="btn-fantasma w-full justify-start">Notificações</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click="sair">Sair</button>
             </div>
           </div>
@@ -103,7 +99,7 @@ const links = computed(() => [
       <div v-if="gaveta && logado" class="md:hidden fixed inset-0 z-50">
         <div class="absolute inset-0 bg-tinta/60" @click="gaveta = false" />
         <aside class="absolute left-0 top-0 bottom-0 w-72 max-w-[85%] bg-papel border-r-2 border-tinta
-                      shadow-bloco flex flex-col animate-colar">
+                      shadow-bloco flex flex-col">
           <div class="flex items-center justify-between gap-3 px-5 h-16 border-b-2 border-tinta">
             <span class="font-display text-xl uppercase">Menu</span>
             <button
@@ -116,13 +112,13 @@ const links = computed(() => [
             </button>
           </div>
 
-          <div class="px-5 py-4 flex items-center gap-3 border-b-2 border-dashed border-risco">
+          <NuxtLink to="/perfil" class="px-5 py-4 flex items-center gap-3 border-b-2 border-dashed border-risco">
             <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="44" :selo="temSelo" :streak="melhorStreak" />
             <div class="min-w-0">
               <p class="font-bold truncate">{{ perfil?.nome }}</p>
               <p class="font-mono text-xs">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }} pts</p>
             </div>
-          </div>
+          </NuxtLink>
 
           <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
             <NuxtLink
