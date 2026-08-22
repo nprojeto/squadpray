@@ -23,7 +23,7 @@ const encerrados = computed(() => squads.value.filter(s => s.status === "cancela
 
     <div class="painel p-6 mt-8 flex items-center justify-between gap-6 flex-wrap">
       <div>
-        <span class="rotulo">pontos que entraram na carteira</span>
+        <span class="rotulo">pontos conquistados</span>
         <p class="font-display text-6xl mt-1">{{ Number(total).toFixed(1) }}</p>
         <p class="font-marca text-lg text-fumaca">só de ciclos que chegaram ao fim</p>
       </div>

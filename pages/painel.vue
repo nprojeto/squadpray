@@ -26,7 +26,7 @@ const podeCriar = computed(() => !meuSquadCriado.value);
         <h1 class="text-5xl sm:text-6xl mt-1">Meus squads</h1>
       </div>
       <div class="text-right">
-        <span class="rotulo">pontos na carteira</span>
+        <span class="rotulo">pontos</span>
         <p class="font-display text-5xl text-laranja">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
       </div>
     </div>
@@ -47,15 +47,16 @@ const podeCriar = computed(() => !meuSquadCriado.value);
       </div>
 
       <template v-else>
-        <nav class="flex gap-1 mt-8 border-b-2 border-tinta overflow-x-auto">
+        <nav class="grid grid-cols-3 gap-2 mt-8">
           <button
             v-for="a in abas" :key="a.chave"
-            class="px-4 py-3 font-display uppercase text-lg border-b-4 -mb-0.5 transition whitespace-nowrap"
-            :class="aba === a.chave ? 'border-laranja text-laranja' : 'border-transparent text-fumaca hover:text-tinta'"
+            class="rounded-lg border-2 border-tinta px-2 py-2.5 font-display uppercase
+                   text-sm sm:text-lg leading-tight transition"
+            :class="aba === a.chave ? 'bg-amarelo shadow-blocoP' : 'bg-cartao text-fumaca hover:bg-amarelo/40'"
             @click="aba = a.chave as any"
           >
             {{ a.texto }}
-            <span class="font-mono text-sm">({{ a.lista.length }})</span>
+            <span class="block font-mono text-xs">{{ a.lista.length }}</span>
           </button>
         </nav>
 

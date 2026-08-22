@@ -293,6 +293,10 @@ Deno.serve(async (req) => {
         const { error } = await db.rpc("gerar_periodos", { p_squad: squadId });
         if (error) return erro(error.message);
 
+        // convites que ficaram em aberto não valem mais
+        await db.from("squad_invites").update({ status: "expirado" })
+          .eq("squad_id", squadId).in("status", ["pendente", "aceito"]);
+
         const { data: membros } = await db.from("squad_members")
           .select("user_id").eq("squad_id", squadId).eq("status", "ativo");
         await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
@@ -329,7 +333,7 @@ Deno.serve(async (req) => {
 
         if (perfil?.id) {
           await notificar(db, [perfil.id], "Convite para um squad",
-            `Você foi convidado para o squad ${squad.nome}.`, `/convites`);
+            `Você foi convidado para o squad ${squad.nome}.`, "/convites");
         }
         return ok({ convite: conv, cadastrado: !!perfil }, 201);
       }
@@ -421,7 +425,8 @@ Deno.serve(async (req) => {
         const { data: membros } = await db.from("squad_members")
           .select("user_id").eq("squad_id", squadId).eq("status", "ativo");
         await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
-          "Squad encerrado", `O ciclo de ${squad.nome} foi encerrado antes do fim. Os pontos não entraram na carteira.`);
+          "Squad encerrado", `O ciclo de ${squad.nome} foi encerrado antes do fim. Os pontos não foram somados.`,
+          "/historico");
         return ok({ encerrado: true });
       }
 
@@ -570,6 +575,13 @@ Deno.serve(async (req) => {
         if (conv.user_id !== user.id && conv.email.toLowerCase() !== meuEmail) {
           return erro("Este convite não é seu.", 403);
         }
+
+        const { data: squadConv } = await db.from("squads")
+          .select("status, nome").eq("id", conv.squad_id).single();
+        if (squadConv && squadConv.status !== "rascunho") {
+          await db.from("squad_invites").update({ status: "expirado" }).eq("id", conviteId);
+          return erro(`O ciclo do squad ${squadConv.nome} já começou. Este convite não vale mais.`);
+        }
         if (!aceitar) {
           await db.from("squad_invites").update({ status: "recusado" }).eq("id", conviteId);
           return ok({ status: "recusado" });
@@ -590,9 +602,10 @@ Deno.serve(async (req) => {
         }).eq("id", conviteId);
 
         const { data: membros } = await db.from("squad_members")
-          .select("user_id").eq("squad_id", conv.squad_id).eq("status", "ativo");
+          .select("user_id").eq("squad_id", conv.squad_id).eq("status", "ativo")
+          .neq("user_id", conv.convidado_por);
         await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
-          "Alguém quer entrar no squad", "Confirme para liberar a entrada.", `/convites`);
+          "Alguém quer entrar no squad", "Confirme para liberar a entrada.", "/convites");
 
         return ok({ status: "aceito", aguardando: "aprovação de todos os membros" });
       }
@@ -654,7 +667,8 @@ Deno.serve(async (req) => {
       let squads: any[] = [];
       if (lista.length) {
         const { data } = await db.from("v_squad_resumo")
-          .select("id, nome, tipo, streak_atual, selo_dourado, status").in("id", lista);
+          .select("id, nome, tipo, streak_atual, streak_recorde, selo_dourado, status, pontos_total, criado_por")
+          .in("id", lista);
         squads = data ?? [];
       }
 

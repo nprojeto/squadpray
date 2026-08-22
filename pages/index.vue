@@ -3,10 +3,14 @@ import { auth } from "~/lib/api";
 
 const email = ref(""); const senha = ref("");
 const erro = ref<string | null>(null); const carregando = ref(false);
+const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null);
 const { carregar } = useSessao();
 
 async function entrar() {
-  erro.value = null; carregando.value = true;
+  erro.value = null; eEmail.value = null; eSenha.value = null;
+  if (!email.value.trim()) { eEmail.value = "Informe seu e-mail."; return; }
+  if (!senha.value) { eSenha.value = "Informe sua senha."; return; }
+  carregando.value = true;
   try {
     await auth.entrar(email.value.trim(), senha.value);
     await carregar();
@@ -108,14 +112,18 @@ const tipos = [
       <h2 class="text-4xl">Entrar</h2>
       <p class="font-marca text-xl text-laranja mt-1">seu squad tá esperando</p>
 
-      <form class="mt-6 space-y-4" @submit.prevent="entrar">
+      <form novalidate class="mt-6 space-y-4" @submit.prevent="entrar">
         <div>
           <label for="email">E-mail</label>
-          <input id="email" v-model="email" type="email" required autocomplete="email" placeholder="voce@email.com" />
+          <input id="email" v-model="email" type="email" autocomplete="email" placeholder="voce@email.com"
+                 :class="eEmail ? '!border-laranja' : ''" @input="eEmail = null" />
+          <CampoErro :mensagem="eEmail" />
         </div>
         <div>
           <label for="senha">Senha</label>
-          <input id="senha" v-model="senha" type="password" required autocomplete="current-password" placeholder="••••••••" />
+          <input id="senha" v-model="senha" type="password" autocomplete="current-password" placeholder="••••••••"
+                 :class="eSenha ? '!border-laranja' : ''" @input="eSenha = null" />
+          <CampoErro :mensagem="eSenha" />
         </div>
 
         <AvisoErro :mensagem="erro" />

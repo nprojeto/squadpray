@@ -43,7 +43,21 @@
   input, textarea, select {
     @apply bg-cartao border-2 border-tinta rounded-lg px-4 py-3 w-full text-tinta
            placeholder:text-fumaca/70 transition;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    font-size: 16px; /* evita o zoom automático do iPhone */
   }
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    text-align: left;
+  }
+  input[type="checkbox"] {
+    width: auto;
+    min-width: 0;
+  }
+  textarea { resize: vertical; }
   input:focus, textarea:focus, select:focus {
     @apply outline-none shadow-blocoP;
   }

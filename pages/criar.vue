@@ -11,6 +11,10 @@ const inicio = ref(hojeISO());
 const fim = ref("");
 const erro = ref<string | null>(null);
 const salvando = ref(false);
+const eNome = ref<string | null>(null);
+const eObjetivo = ref<string | null>(null);
+const eInicio = ref<string | null>(null);
+const eFim = ref<string | null>(null);
 
 const semanal = computed(() => ehSemanal(tipo.value));
 const inicioReal = computed(() => (semanal.value ? proximaSegunda(new Date(inicio.value + "T12:00:00")) : inicio.value));
@@ -31,14 +35,26 @@ const minimoFim = computed(() => {
 
 watch(tipo, () => { if (semanal.value) inicio.value = proximaSegunda(); });
 
+function focar(id: string) {
+  document.getElementById(id)?.focus();
+  document.getElementById(id)?.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
 async function criar() {
   erro.value = null;
-  if (!nome.value.trim()) { erro.value = "Dê um nome ao squad."; return; }
-  if (!fim.value) { erro.value = "Escolha a data de término."; return; }
-  const dias = Math.floor((+new Date(fim.value) - +new Date(inicioReal.value)) / 86400000) + 1;
-  if (dias < 21) { erro.value = `O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`; return; }
+  eNome.value = eObjetivo.value = eInicio.value = eFim.value = null;
+
+  if (!nome.value.trim()) { eNome.value = "Dê um nome ao squad."; focar("n"); return; }
   if (precisaObjetivo(tipo.value) && objetivo.value.trim().length < 10) {
-    erro.value = "Descreva o objetivo deste squad com pelo menos 10 caracteres."; return;
+    eObjetivo.value = "Descreva o objetivo com pelo menos 10 caracteres."; focar("o"); return;
+  }
+  if (!inicio.value) { eInicio.value = "Escolha quando o ciclo começa."; focar("i"); return; }
+  if (!fim.value) { eFim.value = "Escolha a data de término."; focar("f"); return; }
+
+  const dias = Math.floor((+new Date(fim.value) - +new Date(inicioReal.value)) / 86400000) + 1;
+  if (dias < 21) {
+    eFim.value = `O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`;
+    focar("f"); return;
   }
   salvando.value = true;
   try {
@@ -71,7 +87,7 @@ async function criar() {
       <NuxtLink :to="`/squad/${meuSquadCriado.id}`" class="btn-ouro mt-6">Abrir meu squad</NuxtLink>
     </div>
 
-    <form v-else class="painel p-7 mt-8 space-y-6" @submit.prevent="criar">
+    <form v-else novalidate class="painel p-7 mt-8 space-y-6" @submit.prevent="criar">
       <div>
         <label for="tipo">O que este squad vai fazer</label>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -89,14 +105,18 @@ async function criar() {
 
       <div>
         <label for="n">Nome do squad</label>
-        <input id="n" v-model="nome" required placeholder="Ex.: Guerreiros da Madrugada" />
+        <input id="n" v-model="nome" placeholder="Ex.: Guerreiros da Madrugada"
+               :class="eNome ? '!border-laranja' : ''" @input="eNome = null" />
+        <CampoErro :mensagem="eNome" />
       </div>
 
       <div v-if="precisaObjetivo(tipo)">
         <label for="o">Objetivo deste squad</label>
-        <textarea id="o" v-model="objetivo" rows="3" required
-          placeholder="Pelo que este squad vai orar ou jejuar?" />
-        <p class="text-xs text-fumaca mt-1">Obrigatório para oração e jejum.</p>
+        <textarea id="o" v-model="objetivo" rows="3"
+          placeholder="Pelo que este squad vai orar ou jejuar?"
+          :class="eObjetivo ? '!border-laranja' : ''" @input="eObjetivo = null" />
+        <p class="text-xs text-fumaca font-semibold mt-1">Obrigatório para oração e jejum.</p>
+        <CampoErro :mensagem="eObjetivo" />
       </div>
 
       <div>
@@ -107,14 +127,18 @@ async function criar() {
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
           <label for="i">Começa em</label>
-          <input id="i" v-model="inicio" type="date" required :min="hojeISO()" />
+          <input id="i" v-model="inicio" type="date" :min="hojeISO()"
+                 :class="eInicio ? '!border-laranja' : ''" @input="eInicio = null" />
+          <CampoErro :mensagem="eInicio" />
           <p v-if="semanal" class="text-xs text-laranja mt-1">
             Ciclos semanais começam na segunda: {{ dataBR(inicioReal) }}
           </p>
         </div>
         <div>
           <label for="f">Termina em</label>
-          <input id="f" v-model="fim" type="date" required :min="minimoFim" />
+          <input id="f" v-model="fim" type="date" :min="minimoFim"
+                 :class="eFim ? '!border-laranja' : ''" @input="eFim = null" />
+          <CampoErro :mensagem="eFim" />
         </div>
       </div>
 
@@ -125,7 +149,7 @@ async function criar() {
           {{ semanal ? 'semanas' : 'dias' }} no ciclo · cada
           {{ semanal ? 'semana cumprida' : 'dia cumprido' }} por todos vale
           <span class="font-mono text-laranja">{{ valorPeriodo.toFixed(2) }}</span> pontos.
-          O ciclo inteiro soma 100 — e os pontos entram na carteira só quando ele terminar.
+          O ciclo inteiro soma 100 — e os pontos só entram quando ele terminar.
         </p>
       </div>
 

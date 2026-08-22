@@ -12,6 +12,11 @@ onMounted(async () => {
 
 const p = computed(() => dados.value?.prayer);
 const idade = computed(() => calcularIdade(p.value?.data_nascimento));
+const abertos = computed(() =>
+  (dados.value?.squads ?? []).filter((s: any) => ["rascunho", "ativo"].includes(s.status)));
+const encerrados = computed(() =>
+  (dados.value?.squads ?? []).filter((s: any) => !["rascunho", "ativo"].includes(s.status)));
+
 const redes = computed(() => ([
   { nome: "Instagram", url: linkRede("instagram", p.value?.instagram) },
   { nome: "Facebook", url: linkRede("facebook", p.value?.facebook) },
@@ -59,8 +64,8 @@ const redes = computed(() => ([
               <p class="font-display text-3xl">{{ Number(p.pontos_total).toFixed(1) }}</p>
             </div>
             <div class="border-2 border-tinta rounded-lg p-4 bg-roxo">
-              <p class="text-[11px] font-bold uppercase tracking-wider">Squads</p>
-              <p class="font-display text-3xl">{{ dados.squads?.length ?? 0 }}</p>
+              <p class="text-[11px] font-bold uppercase tracking-wider">Squads abertos</p>
+              <p class="font-display text-3xl">{{ abertos.length }}</p>
             </div>
           </div>
 
@@ -87,14 +92,43 @@ const redes = computed(() => ([
         </template>
       </section>
 
-      <section v-if="!dados.restrito && dados.squads?.length" class="painel p-6 mt-6">
-        <span class="rotulo">squads</span>
+      <section v-if="!dados.restrito && abertos.length" class="mt-6">
+        <span class="rotulo text-xl">squads em andamento</span>
+        <div class="grid sm:grid-cols-2 gap-4 mt-3">
+          <article v-for="s in abertos" :key="s.id" class="painel p-5">
+            <div class="flex items-start justify-between gap-3">
+              <span class="faixa bg-amarelo text-sm -rotate-1">{{ TIPOS_SQUAD[s.tipo]?.nome }}</span>
+              <EmojiCristao v-if="s.selo_dourado" codigo="coroa" :tamanho="26" />
+            </div>
+            <h3 class="text-2xl mt-3">{{ s.nome }}</h3>
+            <p class="font-marca text-lg text-laranja mt-1">
+              {{ s.criado_por === p.id ? 'squad que ele criou' : 'squad em que foi convidado' }}
+            </p>
+
+            <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+              <div class="border-2 border-tinta rounded-lg py-2"
+                   :class="s.selo_dourado ? 'bg-amarelo' : 'bg-cartao'">
+                <p class="font-display text-3xl">{{ s.streak_atual }}</p>
+                <p class="text-[10px] font-bold uppercase">
+                  {{ s.selo_dourado ? 'streak com coroa' : 'de streak' }}
+                </p>
+              </div>
+              <div class="border-2 border-tinta rounded-lg py-2 bg-cartao">
+                <p class="font-display text-3xl">{{ Number(s.pontos_total ?? 0).toFixed(0) }}</p>
+                <p class="text-[10px] font-bold uppercase">pontos do squad</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section v-if="!dados.restrito && encerrados.length" class="painel p-6 mt-6">
+        <span class="rotulo">já encerrados</span>
         <ul class="mt-3 space-y-2">
-          <li v-for="s in dados.squads" :key="s.id" class="flex items-center justify-between gap-3">
+          <li v-for="s in encerrados" :key="s.id" class="flex items-center justify-between gap-3 text-sm">
             <span class="font-bold">{{ s.nome }}</span>
-            <span class="text-xs font-semibold text-fumaca flex items-center gap-1.5">
-              {{ TIPOS_SQUAD[s.tipo]?.nome }} · <span class="font-mono text-tinta">{{ s.streak_atual }}</span>
-              <EmojiCristao v-if="s.selo_dourado" codigo="coroa" :tamanho="16" />
+            <span class="font-semibold text-fumaca">
+              melhor streak <span class="font-mono text-tinta">{{ s.streak_recorde }}</span>
             </span>
           </li>
         </ul>

@@ -8,11 +8,14 @@ const nascimento = ref(""); const instagram = ref(""); const facebook = ref("");
 const tiktok = ref(""); const youtube = ref(""); const publico = ref(true);
 
 const erro = ref<string | null>(null); const pronto = ref(false); const carregando = ref(false);
+const eNome = ref<string | null>(null); const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null);
 const { carregar } = useSessao();
 
 async function criarConta() {
-  erro.value = null;
-  if (senha.value.length < 6) { erro.value = "A senha precisa ter pelo menos 6 caracteres."; return; }
+  erro.value = null; eNome.value = eEmail.value = eSenha.value = null;
+  if (!nome.value.trim()) { eNome.value = "Diga como podemos te chamar."; return; }
+  if (!/.+@.+\..+/.test(email.value.trim())) { eEmail.value = "Digite um e-mail válido."; return; }
+  if (senha.value.length < 6) { eSenha.value = "A senha precisa ter pelo menos 6 caracteres."; return; }
   carregando.value = true;
   try {
     const r: any = await auth.cadastrar(nome.value.trim(), email.value.trim(), senha.value);
@@ -57,18 +60,24 @@ async function salvarPerfil() {
     </div>
 
     <!-- passo 1 -->
-    <form v-else-if="passo === 1" class="painel p-7 mt-8 space-y-4" @submit.prevent="criarConta">
+    <form v-else-if="passo === 1" novalidate class="painel p-7 mt-8 space-y-4" @submit.prevent="criarConta">
       <div>
         <label for="n">Seu nome</label>
-        <input id="n" v-model="nome" required placeholder="Como seu squad te chama" />
+        <input id="n" v-model="nome" placeholder="Como seu squad te chama"
+               :class="eNome ? '!border-laranja' : ''" @input="eNome = null" />
+        <CampoErro :mensagem="eNome" />
       </div>
       <div>
         <label for="e">E-mail</label>
-        <input id="e" v-model="email" type="email" required autocomplete="email" placeholder="voce@email.com" />
+        <input id="e" v-model="email" type="email" autocomplete="email" placeholder="voce@email.com"
+               :class="eEmail ? '!border-laranja' : ''" @input="eEmail = null" />
+        <CampoErro :mensagem="eEmail" />
       </div>
       <div>
         <label for="s">Senha</label>
-        <input id="s" v-model="senha" type="password" required autocomplete="new-password" placeholder="Mínimo de 6 caracteres" />
+        <input id="s" v-model="senha" type="password" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"
+               :class="eSenha ? '!border-laranja' : ''" @input="eSenha = null" />
+        <CampoErro :mensagem="eSenha" />
       </div>
       <AvisoErro :mensagem="erro" />
       <button class="btn-ouro w-full" :disabled="carregando">

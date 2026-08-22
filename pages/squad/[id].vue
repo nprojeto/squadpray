@@ -127,7 +127,7 @@ async function encerrar() {
   erro.value = null;
   try {
     await api.encerrarSquad(id);
-    aviso.value = "Squad encerrado. Os pontos deste ciclo não entraram na carteira.";
+    aviso.value = "Squad encerrado. Os pontos deste ciclo não foram somados.";
     confirmandoEncerrar.value = false;
     await buscar();
   } catch (e: any) { erro.value = e.message; }
@@ -137,7 +137,7 @@ async function finalizar() {
   erro.value = null;
   try {
     const r: any = await api.finalizarSquad(id);
-    aviso.value = r.erro ? r.erro : `Ciclo fechado. ${Number(r.pontos ?? 0).toFixed(1)} pontos foram para a carteira de cada um.`;
+    aviso.value = r.erro ? r.erro : `Ciclo fechado. ${Number(r.pontos ?? 0).toFixed(1)} pontos foram somados para cada um.`;
     await buscar();
   } catch (e: any) { erro.value = e.message; }
 }
@@ -162,6 +162,22 @@ async function votarExclusao(aprovado: boolean) {
     aviso.value = aprovado ? "Seu voto foi registrado." : "Você recusou a exclusão.";
     await buscar();
   } catch (e: any) { erro.value = e.message; }
+}
+
+const abertoId = ref<string | null>(null);
+function alternarArtigo(pid: string) {
+  abertoId.value = abertoId.value === pid ? null : pid;
+}
+
+async function reagirEm(postId: string, codigo: string) {
+  erro.value = null;
+  try { await api.reagir(postId, codigo); await buscar(); }
+  catch (e: any) { erro.value = e.message; }
+}
+
+function resumo(texto: string, limite = 180) {
+  const t = (texto ?? "").trim().replace(/\s+/g, " ");
+  return t.length > limite ? t.slice(0, limite) + "…" : t;
 }
 
 const pedidoExclusao = computed(() => dados.value?.exclusao ?? null);
@@ -546,7 +562,7 @@ function jaConfirmei(f: any) {
             {{ semanal ? 'semanas' : 'dias' }}. Cada um cumprido por todos vale
             <span class="font-mono text-laranja">{{ Number(squad.valor_periodo).toFixed(2) }}</span> pontos.
             Se uma pessoa falhar, ninguém pontua naquele período e o streak volta a zero —
-            Os pontos entram na carteira de cada um só quando o ciclo chegar ao fim.
+            Os pontos de cada um só entram quando o ciclo chegar ao fim.
           </p>
 
           <div v-if="cicloTerminou && !squad.pontos_creditados && squad.status === 'ativo'" class="mt-5">
@@ -558,7 +574,7 @@ function jaConfirmei(f: any) {
           <span class="rotulo">encerrar este squad</span>
           <p class="text-sm font-semibold mt-3">
             Encerrar antes do fim cancela o ciclo. O histórico fica guardado, mas
-            <span class="bg-amarelo px-1">nenhum ponto entra na carteira</span>.
+            <span class="bg-amarelo px-1">nenhum ponto é somado</span>.
           </p>
           <button v-if="!confirmandoEncerrar" class="btn-vidro mt-4" @click="confirmandoEncerrar = true">
             Encerrar squad

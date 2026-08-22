@@ -92,7 +92,7 @@ async function salvar() {
 
       <div class="chumbo mt-6 pt-5 flex items-center justify-between gap-4">
         <div>
-          <span class="rotulo">pontos na carteira</span>
+          <span class="rotulo">pontos</span>
           <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
         </div>
         <NuxtLink to="/historico" class="btn-vidro">Ver histórico</NuxtLink>

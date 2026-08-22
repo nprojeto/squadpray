@@ -1,25 +1,46 @@
 <script setup lang="ts">
 const { perfil, convitesPendentes, naoLidas, carregar, sair, logado, falha, temSelo, melhorStreak } = useSessao();
 const { escuro, alternar, iniciar } = useTema();
-const menuAberto = ref(false);
+const gaveta = ref(false);
 const contaAberta = ref(false);
 const rota = useRoute();
 
 onMounted(() => { iniciar(); carregar(); });
-watch(() => rota.fullPath, () => { menuAberto.value = false; contaAberta.value = false; });
+watch(() => rota.fullPath, () => { gaveta.value = false; contaAberta.value = false; });
+watch(gaveta, (v) => {
+  if (import.meta.client) document.body.style.overflow = v ? "hidden" : "";
+});
 
-const links = [
-  { para: "/painel", texto: "Meus squads" },
-  { para: "/rede", texto: "Rede" },
-  { para: "/convites", texto: "Convites" },
-  { para: "/historico", texto: "Histórico" },
-];
+const links = computed(() => [
+  { para: "/painel", texto: "Meus squads", contador: 0 },
+  { para: "/rede", texto: "Rede", contador: 0 },
+  { para: "/convites", texto: "Convites", contador: convitesPendentes.value },
+  { para: "/historico", texto: "Histórico", contador: 0 },
+  { para: "/notificacoes", texto: "Notificações", contador: naoLidas.value },
+  { para: "/perfil", texto: "Meu perfil", contador: 0 },
+]);
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col">
     <header class="sticky top-0 z-40 border-b-2 border-tinta bg-papel/95 backdrop-blur">
-      <div class="max-w-5xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between gap-3">
+      <div class="max-w-5xl mx-auto px-4 sm:px-5 h-16 flex items-center gap-3">
+        <button
+          v-if="logado"
+          class="md:hidden w-10 h-10 grid place-items-center border-2 border-tinta rounded-lg
+                 bg-cartao shadow-blocoP shrink-0"
+          :aria-expanded="gaveta" aria-label="Abrir menu"
+          @click="gaveta = true"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+            <path d="M3 6h18M3 12h18M3 18h18" />
+          </svg>
+          <span
+            v-if="convitesPendentes + naoLidas"
+            class="absolute translate-x-4 -translate-y-4 w-3 h-3 rounded-full bg-laranja border-2 border-tinta"
+          />
+        </button>
+
         <NuxtLink :to="logado ? '/painel' : '/'" class="flex items-center gap-2 shrink-0">
           <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
             <EmojiCristao codigo="oracao" :tamanho="22" />
@@ -28,27 +49,24 @@ const links = [
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
-          <NuxtLink v-for="l in links" :key="l.para" :to="l.para" class="btn-fantasma relative">
+          <NuxtLink v-for="l in links.slice(0, 4)" :key="l.para" :to="l.para" class="btn-fantasma relative">
             {{ l.texto }}
             <span
-              v-if="l.para === '/convites' && convitesPendentes"
+              v-if="l.contador"
               class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-laranja text-papel
                      border-2 border-tinta grid place-items-center text-[11px] font-bold"
-            >{{ convitesPendentes }}</span>
+            >{{ l.contador }}</span>
           </NuxtLink>
         </nav>
 
-        <div class="flex items-center gap-1.5">
-          <button class="btn-fantasma !px-2.5" :aria-label="escuro ? 'Tema claro' : 'Tema escuro'" @click="alternar">
-            {{ escuro ? "☀" : "☾" }}
-          </button>
+        <div class="flex items-center gap-1.5 ml-auto md:ml-0">
+          <button
+            class="hidden md:inline-flex btn-fantasma !px-2.5"
+            :aria-label="escuro ? 'Tema claro' : 'Tema escuro'" @click="alternar"
+          >{{ escuro ? "☀" : "☾" }}</button>
 
-          <NuxtLink
-            v-if="logado" to="/notificacoes"
-            class="btn-fantasma !px-2.5 relative" aria-label="Notificações"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <NuxtLink v-if="logado" to="/notificacoes" class="hidden md:inline-flex btn-fantasma !px-2.5 relative" aria-label="Notificações">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
             </svg>
@@ -61,41 +79,76 @@ const links = [
 
           <div v-if="logado" class="relative">
             <button
-              class="flex items-center gap-2 rounded-full border-2 border-tinta bg-cartao pl-1 pr-2.5 py-1
-                     hover:bg-amarelo transition"
-              @click="contaAberta = !contaAberta"
+              class="flex items-center gap-2 rounded-full border-2 border-tinta bg-cartao pl-1 pr-2.5 py-1 hover:bg-amarelo transition"
+              @click.stop="contaAberta = !contaAberta"
             >
-              <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="30"
-                            :selo="temSelo" :streak="melhorStreak" />
+              <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="30" :selo="temSelo" :streak="melhorStreak" />
               <span class="font-mono text-xs font-bold">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
             </button>
 
-            <div
-              v-if="contaAberta"
-              class="absolute right-0 mt-2 w-56 painel p-2 z-50"
-            >
+            <div v-if="contaAberta" class="absolute right-0 mt-2 w-56 painel p-2 z-50">
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
-              <NuxtLink to="/historico" class="btn-fantasma w-full justify-start md:hidden">Histórico</NuxtLink>
               <NuxtLink to="/notificacoes" class="btn-fantasma w-full justify-start">Notificações</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click="sair">Sair</button>
             </div>
           </div>
-
-          <button v-if="logado" class="md:hidden btn-fantasma !px-2.5" @click="menuAberto = !menuAberto">
-            Menu
-          </button>
         </div>
       </div>
-
-      <div v-if="menuAberto && logado" class="md:hidden border-t-2 border-tinta px-5 py-3 flex flex-col gap-1">
-        <NuxtLink v-for="l in links" :key="l.para" :to="l.para" class="btn-fantasma justify-start">
-          {{ l.texto }}
-          <span v-if="l.para === '/convites' && convitesPendentes" class="font-mono">({{ convitesPendentes }})</span>
-        </NuxtLink>
-      </div>
     </header>
+
+    <!-- gaveta lateral (mobile) -->
+    <Teleport to="body">
+      <div v-if="gaveta && logado" class="md:hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-tinta/60" @click="gaveta = false" />
+        <aside class="absolute left-0 top-0 bottom-0 w-72 max-w-[85%] bg-papel border-r-2 border-tinta
+                      shadow-bloco flex flex-col animate-colar">
+          <div class="flex items-center justify-between gap-3 px-5 h-16 border-b-2 border-tinta">
+            <span class="font-display text-xl uppercase">Menu</span>
+            <button
+              class="w-10 h-10 grid place-items-center border-2 border-tinta rounded-lg bg-cartao"
+              aria-label="Fechar menu" @click="gaveta = false"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="px-5 py-4 flex items-center gap-3 border-b-2 border-dashed border-risco">
+            <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="44" :selo="temSelo" :streak="melhorStreak" />
+            <div class="min-w-0">
+              <p class="font-bold truncate">{{ perfil?.nome }}</p>
+              <p class="font-mono text-xs">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }} pts</p>
+            </div>
+          </div>
+
+          <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+            <NuxtLink
+              v-for="l in links" :key="l.para" :to="l.para"
+              class="flex items-center justify-between gap-3 rounded-lg px-4 py-3 font-display uppercase
+                     text-lg border-2 border-transparent hover:border-tinta hover:bg-amarelo transition"
+              :class="rota.path === l.para ? 'bg-amarelo border-tinta' : ''"
+            >
+              {{ l.texto }}
+              <span
+                v-if="l.contador"
+                class="min-w-6 h-6 px-1.5 rounded-full bg-laranja text-papel border-2 border-tinta
+                       grid place-items-center text-xs font-bold"
+              >{{ l.contador }}</span>
+            </NuxtLink>
+          </nav>
+
+          <div class="p-3 border-t-2 border-tinta flex gap-2">
+            <button class="btn-vidro flex-1 !py-2" @click="alternar">
+              {{ escuro ? "☀ Claro" : "☾ Escuro" }}
+            </button>
+            <button class="btn-fantasma" @click="sair">Sair</button>
+          </div>
+        </aside>
+      </div>
+    </Teleport>
 
     <main class="flex-1 max-w-5xl w-full mx-auto px-5 py-8 sm:py-12" @click="contaAberta = false">
       <AvisoErro v-if="falha && logado" :mensagem="falha" class="mb-6" />
