@@ -241,6 +241,32 @@ Deno.serve(async (req) => {
 
       if (!souMembro && seg.length > 2) return erro("Você não participa deste squad.", 403);
 
+      // PATCH /squads/:id -> ajustar antes de começar
+      if (seg.length === 2 && metodo === "PATCH") {
+        const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
+        if (!squad) return erro("Squad não encontrado.", 404);
+        if (squad.criado_por !== user.id) return erro("Só quem criou o squad pode editar.", 403);
+        if (squad.status !== "rascunho") return erro("O ciclo já começou. Não dá para mudar as datas.");
+
+        const campos: any = {};
+        for (const k of ["nome", "objetivo", "descricao"]) {
+          if (body[k] !== undefined) campos[k] = body[k];
+        }
+
+        let inicio = body.data_inicio ?? squad.data_inicio;
+        const fim = body.data_fim ?? squad.data_fim;
+        if (SEMANAIS.includes(squad.tipo)) inicio = proximaSegunda(new Date(inicio + "T12:00:00Z"));
+        const dias = Math.floor((+new Date(fim) - +new Date(inicio)) / 86400000) + 1;
+        if (dias < 21) return erro(`O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`);
+        campos.data_inicio = inicio;
+        campos.data_fim = fim;
+        campos.updated_at = new Date().toISOString();
+
+        const { data, error } = await db.from("squads").update(campos).eq("id", squadId).select().single();
+        if (error) return erro(error.message);
+        return ok({ squad: data });
+      }
+
       // POST /squads/:id/ativar
       if (seg[2] === "ativar" && metodo === "POST") {
         const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
@@ -250,6 +276,12 @@ Deno.serve(async (req) => {
           .select("*", { count: "exact", head: true })
           .eq("squad_id", squadId).eq("status", "ativo");
         if ((count ?? 0) < 3) return erro("São necessárias pelo menos 3 pessoas para abrir o card.");
+
+        const diasCiclo = Math.floor(
+          (+new Date(squad.data_fim) - +new Date(squad.data_inicio)) / 86400000) + 1;
+        if (diasCiclo < 21) {
+          return erro(`Este ciclo tem só ${diasCiclo} dias. Ajuste as datas para no mínimo 21 antes de começar.`);
+        }
 
         const { error } = await db.rpc("gerar_periodos", { p_squad: squadId });
         if (error) return erro(error.message);

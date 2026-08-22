@@ -17,6 +17,31 @@ const titulo = ref("");
 const referencia = ref("");
 const salvando = ref(false);
 
+const editando = ref(false);
+const editInicio = ref(""); const editFim = ref(""); const salvandoDatas = ref(false);
+
+function abrirEdicao() {
+  editInicio.value = squad.value.data_inicio;
+  editFim.value = squad.value.data_fim;
+  editando.value = true;
+}
+
+const diasEditados = computed(() => {
+  if (!editInicio.value || !editFim.value) return 0;
+  return Math.floor((+new Date(editFim.value) - +new Date(editInicio.value)) / 86400000) + 1;
+});
+
+async function salvarDatas() {
+  erro.value = null; salvandoDatas.value = true;
+  try {
+    await api.editarSquad(id, { data_inicio: editInicio.value, data_fim: editFim.value });
+    aviso.value = "Datas atualizadas.";
+    editando.value = false;
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
+  finally { salvandoDatas.value = false; }
+}
+
 const emailConvite = ref("");
 const convidando = ref(false);
 
@@ -184,6 +209,42 @@ function jaConfirmei(f: any) {
       </p>
 
       <div v-if="souCriador" class="mt-6 space-y-4">
+        <div class="border-2 border-dashed border-risco rounded-lg p-4">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <p class="text-sm font-bold">
+              {{ dataBR(squad.data_inicio) }} a {{ dataBR(squad.data_fim) }}
+              <span class="font-normal text-fumaca">
+                · {{ Math.floor((+new Date(squad.data_fim) - +new Date(squad.data_inicio)) / 86400000) + 1 }} dias
+              </span>
+            </p>
+            <button v-if="!editando" class="btn-fantasma !py-1.5 text-xs" @click="abrirEdicao">
+              Mudar datas
+            </button>
+          </div>
+
+          <div v-if="editando" class="mt-4 space-y-3">
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label for="ei">Começa em</label>
+                <input id="ei" v-model="editInicio" type="date" />
+              </div>
+              <div>
+                <label for="ef">Termina em</label>
+                <input id="ef" v-model="editFim" type="date" />
+              </div>
+            </div>
+            <p class="text-xs font-semibold" :class="diasEditados >= 21 ? 'text-verde' : 'text-laranja'">
+              {{ diasEditados }} dias — o mínimo é 21.
+            </p>
+            <div class="flex gap-3">
+              <button class="btn-ouro flex-1" :disabled="salvandoDatas || diasEditados < 21" @click="salvarDatas">
+                {{ salvandoDatas ? "Salvando…" : "Salvar datas" }}
+              </button>
+              <button class="btn-fantasma" @click="editando = false">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
         <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="convidar">
           <input v-model="emailConvite" type="email" required placeholder="e-mail de quem você quer convidar" />
           <button class="btn-vidro shrink-0" :disabled="convidando">Convidar</button>

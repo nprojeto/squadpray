@@ -127,6 +127,10 @@ export const api = {
     data_inicio: string; data_fim: string;
   }) => chamar("/squads", { metodo: "POST", corpo: dados }),
   verSquad: (id: string) => chamar(`/squads/${id}`),
+  editarSquad: (id: string, dados: {
+    nome?: string; objetivo?: string; descricao?: string;
+    data_inicio?: string; data_fim?: string;
+  }) => chamar(`/squads/${id}`, { metodo: "PATCH", corpo: dados }),
   ativarSquad: (id: string) => chamar(`/squads/${id}/ativar`, { metodo: "POST" }),
   convidar: (id: string, email: string) =>
     chamar(`/squads/${id}/convidar`, { metodo: "POST", corpo: { email } }),
