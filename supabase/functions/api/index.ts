@@ -152,7 +152,9 @@ Deno.serve(async (req) => {
       }
       if (metodo === "PATCH") {
         const campos: any = {};
-        for (const k of ["nome", "avatar_url", "bio", "timezone"]) {
+        for (const k of ["nome", "avatar_url", "bio", "timezone", "igreja", "ministerios",
+                         "data_nascimento", "instagram", "facebook", "tiktok", "youtube",
+                         "perfil_publico"]) {
           if (body[k] !== undefined) campos[k] = body[k];
         }
         campos.updated_at = new Date().toISOString();
@@ -187,7 +189,7 @@ Deno.serve(async (req) => {
 
         const { data: jaTem } = await db.from("squads")
           .select("id").eq("criado_por", user.id).in("status", ["rascunho", "ativo"]).maybeSingle();
-        if (jaTem) return erro("Você já tem um squad ativo. Cada pessoa pode criar apenas um.");
+        if (jaTem) return erro("Você já tem um squad aberto. Encerre, conclua ou exclua ele para criar outro.");
 
         let inicio = data_inicio;
         if (SEMANAIS.includes(tipo)) inicio = proximaSegunda(new Date(data_inicio + "T12:00:00Z"));
@@ -231,9 +233,14 @@ Deno.serve(async (req) => {
           .select("*, invite_approvals(id, user_id, aprovado)")
           .eq("squad_id", squadId).in("status", ["pendente", "aceito"]);
 
+        const { data: exclusao } = await db.from("squad_exclusoes")
+          .select("*, exclusao_votos(user_id, aprovado), profiles:solicitado_por(nome)")
+          .eq("squad_id", squadId).eq("status", "pendente").maybeSingle();
+
         return ok({
           squad, membros: membros ?? [], periodos: periodos ?? [],
           posts: posts ?? [], fotos: fotos ?? [], convites: convites ?? [],
+          exclusao: exclusao ?? null,
           semanal: SEMANAIS.includes(squad?.tipo),
           sou_criador: squad?.criado_por === user.id,
         });
@@ -299,6 +306,9 @@ Deno.serve(async (req) => {
       if (seg[2] === "convidar" && metodo === "POST") {
         const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
         if (squad.criado_por !== user.id) return erro("Só quem criou o squad pode convidar.", 403);
+        if (squad.status !== "rascunho") {
+          return erro("O ciclo já começou. Não dá para incluir gente depois do início.");
+        }
         const email = String(body.email ?? "").trim().toLowerCase();
         if (!email) return erro("Informe o e-mail de quem você quer convidar.");
 
@@ -422,6 +432,54 @@ Deno.serve(async (req) => {
         return ok(data);
       }
 
+      // DELETE /squads/:id -> excluir (direto se não começou, votação se já começou)
+      if (seg.length === 2 && metodo === "DELETE") {
+        const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
+        if (!squad) return erro("Squad não encontrado.", 404);
+        if (squad.criado_por !== user.id) return erro("Só quem criou o squad pode excluir.", 403);
+
+        if (squad.status === "rascunho") {
+          await db.from("squads").delete().eq("id", squadId);
+          return ok({ excluido: true });
+        }
+
+        const { data: existente } = await db.from("squad_exclusoes")
+          .select("id").eq("squad_id", squadId).eq("status", "pendente").maybeSingle();
+        if (existente) return erro("Já existe um pedido de exclusão aguardando o squad.");
+
+        const { data: pedido, error } = await db.from("squad_exclusoes").insert({
+          squad_id: squadId, solicitado_por: user.id, motivo: body.motivo ?? null,
+        }).select().single();
+        if (error) return erro(error.message);
+
+        await db.from("exclusao_votos").insert({
+          exclusao_id: pedido.id, user_id: user.id, aprovado: true,
+        });
+
+        const { data: membros } = await db.from("squad_members")
+          .select("user_id").eq("squad_id", squadId).eq("status", "ativo").neq("user_id", user.id);
+        await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
+          "Pedido para excluir o squad",
+          `${squad.nome} pode ser apagado. Sua confirmação é necessária.`, `/squad/${squadId}`);
+
+        return ok({ pedido, aguardando_votos: true });
+      }
+
+      // POST /squads/:id/exclusao/votar { aprovado }
+      if (seg[2] === "exclusao" && seg[3] === "votar" && metodo === "POST") {
+        const { data: pedido } = await db.from("squad_exclusoes")
+          .select("*").eq("squad_id", squadId).eq("status", "pendente").maybeSingle();
+        if (!pedido) return erro("Não há pedido de exclusão em aberto.");
+
+        const { error } = await db.from("exclusao_votos").upsert({
+          exclusao_id: pedido.id, user_id: user.id, aprovado: body.aprovado !== false,
+        }, { onConflict: "exclusao_id,user_id" });
+        if (error) return erro(error.message);
+
+        const { data: aindaExiste } = await db.from("squads").select("id").eq("id", squadId).maybeSingle();
+        return ok({ excluido: !aindaExiste });
+      }
+
       // DELETE /squads/:id/sair
       if (seg[2] === "sair" && metodo === "DELETE") {
         const { data: squad } = await db.from("squads").select("criado_por").eq("id", squadId).single();
@@ -516,6 +574,17 @@ Deno.serve(async (req) => {
           await db.from("squad_invites").update({ status: "recusado" }).eq("id", conviteId);
           return ok({ status: "recusado" });
         }
+        // só é possível participar de um squad de outra pessoa por vez
+        const { data: meusVinculos } = await db.from("squad_members")
+          .select("squad_id, squads(status, criado_por, nome)")
+          .eq("user_id", user.id).eq("status", "ativo");
+        const convidadoAberto = (meusVinculos ?? []).find((v: any) =>
+          v.squads && v.squads.criado_por !== user.id &&
+          ["rascunho", "ativo"].includes(v.squads.status));
+        if (convidadoAberto) {
+          return erro(`Você já participa do squad ${convidadoAberto.squads.nome}. Espere ele terminar para entrar em outro.`);
+        }
+
         await db.from("squad_invites").update({
           status: "aceito", user_id: user.id, aceito_em: new Date().toISOString(),
         }).eq("id", conviteId);
@@ -548,6 +617,48 @@ Deno.serve(async (req) => {
         }
         return ok({ status: final?.status });
       }
+    }
+
+    // ============ REDE ============
+    if (seg[0] === "rede" && metodo === "GET") {
+      const termo = url.searchParams.get("q") ?? "";
+      const { data, error } = await db.rpc("buscar_prayers", { termo });
+      if (error) return erro(error.message);
+      return ok({ prayers: (data ?? []).filter((p: any) => p.id !== user.id) });
+    }
+
+    if (seg[0] === "prayer" && seg[1] && metodo === "GET") {
+      const alvo = seg[1];
+      const { data: p } = await db.from("profiles").select("*").eq("id", alvo).maybeSingle();
+      if (!p) return erro("Prayer não encontrado.", 404);
+
+      const { data: eu } = await db.from("profiles")
+        .select("perfil_publico").eq("id", user.id).maybeSingle();
+      if (eu && eu.perfil_publico === false && p.id !== user.id) {
+        return ok({
+          restrito: true, motivo: "meu_perfil_fechado",
+          prayer: { id: p.id, nome: p.nome, avatar_url: p.avatar_url },
+        });
+      }
+
+      if (!p.perfil_publico && p.id !== user.id) {
+        return ok({
+          restrito: true, motivo: "perfil_dele_fechado",
+          prayer: { id: p.id, nome: p.nome, avatar_url: p.avatar_url },
+        });
+      }
+
+      const { data: squadsIds } = await db.from("squad_members")
+        .select("squad_id").eq("user_id", alvo).eq("status", "ativo");
+      const lista = squadsIds?.map((m: any) => m.squad_id) ?? [];
+      let squads: any[] = [];
+      if (lista.length) {
+        const { data } = await db.from("v_squad_resumo")
+          .select("id, nome, tipo, streak_atual, selo_dourado, status").in("id", lista);
+        squads = data ?? [];
+      }
+
+      return ok({ restrito: false, prayer: p, squads });
     }
 
     // ============ HISTÓRICO ============

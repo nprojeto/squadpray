@@ -3,7 +3,7 @@ import { api, enviarImagem, TIPOS_SQUAD, dataBR, hojeISO } from "~/lib/api";
 
 const rota = useRoute();
 const id = rota.params.id as string;
-const { perfil } = useSessao();
+const { perfil, carregar: carregarSessao } = useSessao();
 
 const dados = ref<any>(null);
 const emojis = ref<any[]>([]);
@@ -142,6 +142,34 @@ async function finalizar() {
   } catch (e: any) { erro.value = e.message; }
 }
 
+const excluindo = ref(false);
+async function excluirSquad() {
+  erro.value = null;
+  try {
+    const r: any = await api.excluirSquad(id);
+    if (r.excluido) { await carregarSessao(); await navigateTo("/painel"); return; }
+    aviso.value = "Pedido enviado. O squad só some quando todos confirmarem.";
+    excluindo.value = false;
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
+}
+
+async function votarExclusao(aprovado: boolean) {
+  erro.value = null;
+  try {
+    const r: any = await api.votarExclusao(id, aprovado);
+    if (r.excluido) { await carregarSessao(); await navigateTo("/painel"); return; }
+    aviso.value = aprovado ? "Seu voto foi registrado." : "Você recusou a exclusão.";
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
+}
+
+const pedidoExclusao = computed(() => dados.value?.exclusao ?? null);
+const jaVotei = computed(() =>
+  pedidoExclusao.value?.exclusao_votos?.some((v: any) => v.user_id === perfil.value?.id));
+const votosSim = computed(() =>
+  pedidoExclusao.value?.exclusao_votos?.filter((v: any) => v.aprovado).length ?? 0);
+
 const cicloTerminou = computed(() => !!squad.value && hojeISO() > squad.value.data_fim);
 
 async function ativar() {
@@ -200,6 +228,24 @@ function jaConfirmei(f: any) {
 
     <AvisoErro :mensagem="erro" class="mt-6" />
     <AvisoErro :mensagem="aviso" tipo="ok" class="mt-6" />
+
+    <section v-if="pedidoExclusao" class="painel p-6 mt-6 !border-laranja">
+      <span class="rotulo">pedido para excluir o squad</span>
+      <p class="font-semibold mt-2">
+        {{ pedidoExclusao.profiles?.nome }} pediu para apagar este squad.
+        Precisa da confirmação de todos — {{ votosSim }} de {{ membros.length }} já confirmaram.
+      </p>
+      <p class="text-sm text-fumaca font-semibold mt-2">
+        Se todos confirmarem, o squad e todo o conteúdo dele somem para sempre.
+      </p>
+      <div v-if="!jaVotei" class="flex flex-wrap gap-3 mt-5">
+        <button class="btn-ouro !bg-laranja !text-papel" @click="votarExclusao(true)">
+          Confirmar exclusão
+        </button>
+        <button class="btn-vidro" @click="votarExclusao(false)">Recusar</button>
+      </div>
+      <p v-else class="font-marca text-lg text-laranja mt-4">você já respondeu</p>
+    </section>
 
     <!-- squad ainda montando -->
     <section v-if="squad.status === 'rascunho'" class="painel p-7 mt-8">
@@ -468,8 +514,10 @@ function jaConfirmei(f: any) {
           <ol class="space-y-2">
             <li v-for="(m, i) in membros" :key="m.id" class="flex items-center gap-3 text-sm">
               <span class="font-mono text-fumaca w-6">{{ i + 1 }}</span>
-              <AvatarPerfil :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="32" />
-              <span class="flex-1 font-bold">{{ m.profiles.nome }}</span>
+              <NuxtLink :to="`/prayer/${m.profiles.id}`" class="flex items-center gap-3 flex-1 min-w-0 hover:text-laranja">
+                <AvatarPerfil :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="32" />
+                <span class="font-bold truncate">{{ m.profiles.nome }}</span>
+              </NuxtLink>
               <span v-if="m.papel === 'criador'" class="rotulo">criador</span>
               <span class="font-mono text-xs text-laranja">{{ Number(m.profiles.pontos_total).toFixed(0) }} pts</span>
             </li>
@@ -482,10 +530,14 @@ function jaConfirmei(f: any) {
             <input v-model="emailConvite" type="email" required placeholder="e-mail da pessoa" />
             <button class="btn-vidro shrink-0" :disabled="convidando">Convidar</button>
           </form>
-          <p class="text-xs text-fumaca mt-3">
-            A pessoa aceita e depois todos os membros precisam aprovar a entrada.
+          <p class="text-xs text-fumaca font-semibold mt-3">
+            A pessoa aceita e depois os outros membros aprovam a entrada.
           </p>
         </div>
+
+        <p v-else-if="souCriador && squad.status === 'ativo'" class="painel p-5 font-semibold text-sm">
+          O ciclo já começou — não dá para incluir gente nova até o fim.
+        </p>
 
         <div class="painel p-6">
           <p class="rotulo">Como funciona a pontuação aqui</p>
@@ -514,6 +566,23 @@ function jaConfirmei(f: any) {
           <div v-else class="flex flex-wrap gap-3 mt-4">
             <button class="btn-ouro !bg-laranja !text-papel" @click="encerrar">Sim, encerrar sem pontos</button>
             <button class="btn-fantasma" @click="confirmandoEncerrar = false">Voltar</button>
+          </div>
+
+          <div class="chumbo mt-6 pt-5">
+            <p class="text-sm font-semibold">
+              Excluir apaga o squad e todo o conteúdo.
+              <template v-if="squad.status === 'rascunho'">Como o ciclo ainda não começou, some na hora.</template>
+              <template v-else>Como o ciclo já começou, todos os membros precisam confirmar.</template>
+            </p>
+            <button v-if="!excluindo && !pedidoExclusao" class="btn-fantasma mt-3 !text-laranja" @click="excluindo = true">
+              Excluir squad
+            </button>
+            <div v-else-if="excluindo" class="flex flex-wrap gap-3 mt-3">
+              <button class="btn-ouro !bg-laranja !text-papel" @click="excluirSquad">
+                {{ squad.status === 'rascunho' ? 'Sim, excluir agora' : 'Pedir exclusão ao squad' }}
+              </button>
+              <button class="btn-fantasma" @click="excluindo = false">Voltar</button>
+            </div>
           </div>
         </div>
       </section>

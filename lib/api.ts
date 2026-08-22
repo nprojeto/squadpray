@@ -53,6 +53,9 @@ export type TipoSquad =
 export interface Perfil {
   id: string; nome: string; email: string; avatar_url?: string;
   bio?: string; timezone: string; pontos_total: number;
+  igreja?: string; ministerios?: string; data_nascimento?: string;
+  instagram?: string; facebook?: string; tiktok?: string; youtube?: string;
+  perfil_publico?: boolean;
 }
 
 export interface Squad {
@@ -142,6 +145,11 @@ export const api = {
   encerrarSquad: (id: string) => chamar(`/squads/${id}/encerrar`, { metodo: "POST" }),
   finalizarSquad: (id: string) => chamar(`/squads/${id}/finalizar`, { metodo: "POST" }),
   historico: () => chamar("/historico"),
+  excluirSquad: (id: string) => chamar(`/squads/${id}`, { metodo: "DELETE" }),
+  votarExclusao: (id: string, aprovado: boolean) =>
+    chamar(`/squads/${id}/exclusao/votar`, { metodo: "POST", corpo: { aprovado } }),
+  rede: (q = "") => chamar(`/rede?q=${encodeURIComponent(q)}`),
+  verPrayer: (id: string) => chamar(`/prayer/${id}`),
 
   publicarArtigo: (squadId: string, dados: {
     period_id: string; titulo?: string; referencia?: string; conteudo: string;
@@ -196,4 +204,27 @@ export function proximaSegunda(base = new Date()): string {
 
 export function hojeISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function calcularIdade(nascimento?: string | null): number | null {
+  if (!nascimento) return null;
+  const n = new Date(nascimento + "T12:00:00");
+  const hoje = new Date();
+  let i = hoje.getFullYear() - n.getFullYear();
+  const m = hoje.getMonth() - n.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < n.getDate())) i--;
+  return i >= 0 && i < 130 ? i : null;
+}
+
+export function linkRede(tipo: string, valor?: string | null): string | null {
+  if (!valor) return null;
+  const v = valor.trim().replace(/^@/, "");
+  if (/^https?:\/\//i.test(v)) return v;
+  const bases: Record<string, string> = {
+    instagram: "https://instagram.com/",
+    facebook: "https://facebook.com/",
+    tiktok: "https://tiktok.com/@",
+    youtube: "https://youtube.com/@",
+  };
+  return bases[tipo] ? bases[tipo] + v : null;
 }

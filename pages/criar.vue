@@ -63,9 +63,10 @@ async function criar() {
 
     <div v-if="meuSquadCriado" class="painel p-7 mt-8 text-center">
       <EmojiCristao codigo="coroa" :tamanho="40" class="mx-auto" />
-      <h2 class="text-2xl mt-4">Você já tem um squad</h2>
-      <p class="text-fumaca mt-2 text-sm">
-        Seu squad é <span class="text-tinta">{{ meuSquadCriado.nome }}</span>.
+      <h2 class="text-3xl mt-4">Você já tem um squad aberto</h2>
+      <p class="font-semibold mt-2 text-sm">
+        Seu squad é <span class="bg-amarelo px-1">{{ meuSquadCriado.nome }}</span>.
+        Quando ele for concluído, cancelado ou excluído, você pode criar outro.
       </p>
       <NuxtLink :to="`/squad/${meuSquadCriado.id}`" class="btn-ouro mt-6">Abrir meu squad</NuxtLink>
     </div>

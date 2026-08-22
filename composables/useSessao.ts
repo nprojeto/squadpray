@@ -49,7 +49,8 @@ export function useSessao() {
   const melhorStreak = computed(() =>
     squads.value.reduce((a, s) => Math.max(a, s.streak_atual ?? 0), 0));
   const meuSquadCriado = computed(() =>
-    squads.value.find((s) => s.criado_por === perfil.value?.id));
+    squads.value.find((s) => s.criado_por === perfil.value?.id &&
+      ["rascunho", "ativo"].includes(s.status)));
 
   return { perfil, squads, naoLidas, convitesPendentes, carregando, falha, logado,
            temSelo, melhorStreak, meuSquadCriado, carregar, sair };

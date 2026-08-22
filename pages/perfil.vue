@@ -3,12 +3,23 @@ import { api, enviarAvatar, TIPOS_SQUAD } from "~/lib/api";
 
 const { perfil, squads, carregar, sair, temSelo, melhorStreak } = useSessao();
 const nome = ref(""); const bio = ref("");
+const igreja = ref(""); const ministerios = ref(""); const nascimento = ref("");
+const instagram = ref(""); const facebook = ref(""); const tiktok = ref(""); const youtube = ref("");
+const publico = ref(true);
 const salvando = ref(false); const enviandoFoto = ref(false);
 const aviso = ref<string | null>(null); const erro = ref<string | null>(null);
 const campoFoto = ref<HTMLInputElement | null>(null);
 
 watchEffect(() => {
-  if (perfil.value) { nome.value = perfil.value.nome; bio.value = perfil.value.bio ?? ""; }
+  const p = perfil.value;
+  if (p) {
+    nome.value = p.nome; bio.value = p.bio ?? "";
+    igreja.value = p.igreja ?? ""; ministerios.value = p.ministerios ?? "";
+    nascimento.value = p.data_nascimento ?? "";
+    instagram.value = p.instagram ?? ""; facebook.value = p.facebook ?? "";
+    tiktok.value = p.tiktok ?? ""; youtube.value = p.youtube ?? "";
+    publico.value = p.perfil_publico !== false;
+  }
 });
 
 async function trocarFoto(ev: Event) {
@@ -33,7 +44,14 @@ async function removerFoto() {
 async function salvar() {
   erro.value = null; aviso.value = null; salvando.value = true;
   try {
-    await api.atualizarPerfil({ nome: nome.value.trim(), bio: bio.value.trim() });
+    await api.atualizarPerfil({
+      nome: nome.value.trim(), bio: bio.value.trim(),
+      igreja: igreja.value.trim(), ministerios: ministerios.value.trim(),
+      data_nascimento: nascimento.value || undefined,
+      instagram: instagram.value.trim(), facebook: facebook.value.trim(),
+      tiktok: tiktok.value.trim(), youtube: youtube.value.trim(),
+      perfil_publico: publico.value,
+    });
     await carregar(); aviso.value = "Perfil salvo.";
   } catch (e: any) { erro.value = e.message; }
   finally { salvando.value = false; }
@@ -103,9 +121,37 @@ async function salvar() {
         <input id="n" v-model="nome" required />
       </div>
       <div>
-        <label for="b">Sobre você</label>
-        <textarea id="b" v-model="bio" rows="3" placeholder="Uma linha sobre você" />
+        <label for="b">Descrição</label>
+        <textarea id="b" v-model="bio" rows="3" placeholder="Uma linha sobre você e sua caminhada" />
       </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label for="ig">Igreja</label><input id="ig" v-model="igreja" placeholder="Nome da sua igreja" /></div>
+        <div><label for="dn">Data de nascimento</label><input id="dn" v-model="nascimento" type="date" /></div>
+      </div>
+      <div>
+        <label for="mi">Ministérios</label>
+        <input id="mi" v-model="ministerios" placeholder="Louvor, Intercessão, GDC…" />
+      </div>
+
+      <div class="chumbo pt-5">
+        <span class="rotulo">redes sociais</span>
+        <div class="grid sm:grid-cols-2 gap-4 mt-3">
+          <div><label for="in">Instagram</label><input id="in" v-model="instagram" placeholder="@seuperfil" /></div>
+          <div><label for="fb">Facebook</label><input id="fb" v-model="facebook" placeholder="seuperfil" /></div>
+          <div><label for="tk">TikTok</label><input id="tk" v-model="tiktok" placeholder="@seuperfil" /></div>
+          <div><label for="yt">YouTube</label><input id="yt" v-model="youtube" placeholder="@seucanal" /></div>
+        </div>
+      </div>
+
+      <label class="flex items-start gap-3 border-2 border-tinta rounded-lg p-4 bg-cartao cursor-pointer">
+        <input v-model="publico" type="checkbox" class="!w-5 !h-5 !p-0 mt-0.5 shrink-0" />
+        <span class="text-sm font-semibold">
+          Deixar meu perfil visível na rede
+          <span class="block font-normal text-fumaca text-xs mt-1">
+            Desmarcado, outras pessoas veem só seu nome e sua foto.
+          </span>
+        </span>
+      </label>
       <p class="text-xs text-fumaca font-semibold">
         E-mail: {{ perfil?.email }} · Fuso: {{ perfil?.timezone }}
       </p>
