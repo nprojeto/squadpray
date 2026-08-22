@@ -160,16 +160,22 @@ export const api = {
   emojis: () => chamar("/emojis"),
 };
 
-// ---------- upload da foto semanal ----------
-export async function enviarImagem(arquivo: File, squadId: string): Promise<string> {
-  const ext = arquivo.name.split(".").pop() || "jpg";
-  const caminho = `${squadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+// ---------- upload de imagens ----------
+export async function enviarImagem(arquivo: File, pasta: string): Promise<string> {
+  if (arquivo.size > 6 * 1024 * 1024) {
+    throw new Error("A imagem passa de 6 MB. Escolha uma menor.");
+  }
+  const ext = (arquivo.name.split(".").pop() || "jpg").toLowerCase();
+  const caminho = `${pasta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const { error } = await supabase().storage.from("galeria").upload(caminho, arquivo, {
     cacheControl: "3600", upsert: false,
   });
   if (error) throw new Error("Não foi possível enviar a foto. Tente outra imagem.");
   return supabase().storage.from("galeria").getPublicUrl(caminho).data.publicUrl;
 }
+
+export const enviarAvatar = (arquivo: File, userId: string) =>
+  enviarImagem(arquivo, `avatares/${userId}`);
 
 // ---------- datas ----------
 export function dataBR(iso: string) {

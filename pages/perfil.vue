@@ -1,13 +1,34 @@
 <script setup lang="ts">
-import { api, TIPOS_SQUAD } from "~/lib/api";
+import { api, enviarAvatar, TIPOS_SQUAD } from "~/lib/api";
 
-const { perfil, squads, carregar, sair } = useSessao();
+const { perfil, squads, carregar, sair, temSelo, melhorStreak } = useSessao();
 const nome = ref(""); const bio = ref("");
-const salvando = ref(false); const aviso = ref<string | null>(null); const erro = ref<string | null>(null);
+const salvando = ref(false); const enviandoFoto = ref(false);
+const aviso = ref<string | null>(null); const erro = ref<string | null>(null);
+const campoFoto = ref<HTMLInputElement | null>(null);
 
 watchEffect(() => {
   if (perfil.value) { nome.value = perfil.value.nome; bio.value = perfil.value.bio ?? ""; }
 });
+
+async function trocarFoto(ev: Event) {
+  const arq = (ev.target as HTMLInputElement).files?.[0];
+  if (!arq || !perfil.value) return;
+  erro.value = null; aviso.value = null; enviandoFoto.value = true;
+  try {
+    const url = await enviarAvatar(arq, perfil.value.id);
+    await api.atualizarPerfil({ avatar_url: url });
+    await carregar();
+    aviso.value = "Foto atualizada.";
+  } catch (e: any) { erro.value = e.message; }
+  finally { enviandoFoto.value = false; if (campoFoto.value) campoFoto.value.value = ""; }
+}
+
+async function removerFoto() {
+  erro.value = null;
+  try { await api.atualizarPerfil({ avatar_url: null as any }); await carregar(); aviso.value = "Foto removida."; }
+  catch (e: any) { erro.value = e.message; }
+}
 
 async function salvar() {
   erro.value = null; aviso.value = null; salvando.value = true;
@@ -21,33 +42,62 @@ async function salvar() {
 
 <template>
   <div class="max-w-2xl">
-    <h1 class="text-4xl">Meu perfil</h1>
+    <span class="rotulo text-xl">quem você é por aqui</span>
+    <h1 class="text-5xl sm:text-6xl mt-2">Meu perfil</h1>
 
-    <div class="painel p-7 mt-8 flex items-center justify-between gap-6">
-      <div>
-        <p class="rotulo">Pontos acumulados</p>
-        <p class="font-mono text-5xl font-extrabold text-laranja mt-1">
-          {{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}
-        </p>
-        <p class="text-xs text-fumaca mt-2">Somando todos os squads em que você está.</p>
+    <section class="painel p-6 sm:p-7 mt-8">
+      <div class="flex items-center gap-5 flex-wrap">
+        <AvatarPerfil
+          :url="perfil?.avatar_url" :nome="perfil?.nome"
+          :tamanho="96" :selo="temSelo" :streak="melhorStreak"
+        />
+        <div class="flex-1 min-w-[200px]">
+          <p class="font-display text-3xl">{{ perfil?.nome }}</p>
+          <p v-if="temSelo" class="font-marca text-lg text-laranja">
+            selo dourado ativo · {{ melhorStreak }} de streak
+          </p>
+          <p v-else class="font-marca text-lg text-fumaca">
+            a coroa aparece aqui quando um squad seu chegar a 7 seguidos
+          </p>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button class="btn-vidro !py-2 text-xs" :disabled="enviandoFoto" @click="campoFoto?.click()">
+              {{ enviandoFoto ? "Enviando…" : (perfil?.avatar_url ? "Trocar foto" : "Colocar foto") }}
+            </button>
+            <button v-if="perfil?.avatar_url" class="btn-fantasma !py-2 text-xs" @click="removerFoto">
+              Remover
+            </button>
+          </div>
+          <input ref="campoFoto" type="file" accept="image/*" class="hidden" @change="trocarFoto" />
+        </div>
       </div>
-      <EmojiCristao codigo="coroa" :tamanho="56" />
-    </div>
 
-    <div class="painel p-7 mt-6">
-      <p class="rotulo mb-4">Meus squads</p>
-      <ul class="space-y-2 text-sm">
+      <div class="chumbo mt-6 pt-5 flex items-center justify-between gap-4">
+        <div>
+          <span class="rotulo">pontos na carteira</span>
+          <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
+        </div>
+        <NuxtLink to="/historico" class="btn-vidro">Ver histórico</NuxtLink>
+      </div>
+    </section>
+
+    <section class="painel p-6 mt-6">
+      <span class="rotulo">meus squads</span>
+      <ul class="space-y-2 mt-3">
         <li v-for="s in squads" :key="s.id" class="flex items-center justify-between gap-3">
-          <NuxtLink :to="`/squad/${s.id}`" class="hover:text-laranja">{{ s.nome }}</NuxtLink>
-          <span class="text-fumaca text-xs">
-            {{ TIPOS_SQUAD[s.tipo].nome }} · <span class="font-mono">{{ s.streak_atual }}</span>
+          <NuxtLink :to="`/squad/${s.id}`" class="font-bold hover:text-laranja">{{ s.nome }}</NuxtLink>
+          <span class="text-xs font-semibold text-fumaca flex items-center gap-1.5">
+            {{ TIPOS_SQUAD[s.tipo].nome }} · <span class="font-mono text-tinta">{{ s.streak_atual }}</span>
+            <EmojiCristao v-if="s.selo_dourado" codigo="coroa" :tamanho="16" />
           </span>
         </li>
       </ul>
-      <p v-if="!squads.length" class="text-fumaca text-sm">Você ainda não participa de nenhum squad.</p>
-    </div>
+      <p v-if="!squads.length" class="text-fumaca font-semibold text-sm mt-2">
+        Você ainda não participa de nenhum squad.
+      </p>
+    </section>
 
-    <form class="painel p-7 mt-6 space-y-4" @submit.prevent="salvar">
+    <form class="painel p-6 mt-6 space-y-4" @submit.prevent="salvar">
       <div>
         <label for="n">Nome</label>
         <input id="n" v-model="nome" required />
@@ -56,7 +106,9 @@ async function salvar() {
         <label for="b">Sobre você</label>
         <textarea id="b" v-model="bio" rows="3" placeholder="Uma linha sobre você" />
       </div>
-      <p class="text-xs text-fumaca">E-mail: {{ perfil?.email }} · Fuso: {{ perfil?.timezone }}</p>
+      <p class="text-xs text-fumaca font-semibold">
+        E-mail: {{ perfil?.email }} · Fuso: {{ perfil?.timezone }}
+      </p>
       <AvisoErro :mensagem="erro" />
       <AvisoErro :mensagem="aviso" tipo="ok" />
       <div class="flex gap-3">

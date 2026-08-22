@@ -126,7 +126,28 @@ Deno.serve(async (req) => {
         const { count: naoLidas } = await db.from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("user_id", user.id).eq("lida", false);
-        return ok({ perfil, squads: squads ?? [], notificacoes_nao_lidas: naoLidas ?? 0 });
+
+        // convites de verdade: os que esperam por mim
+        const meuEmail = (user.email ?? "").toLowerCase();
+        const { data: convParaMim } = await db.from("squad_invites")
+          .select("id").or(`user_id.eq.${user.id},email.ilike.${meuEmail}`).eq("status", "pendente");
+
+        const meusIds = (await db.from("squad_members").select("squad_id")
+          .eq("user_id", user.id).eq("status", "ativo")).data?.map((m: any) => m.squad_id) ?? [];
+        let paraAprovar = 0;
+        if (meusIds.length) {
+          const { data: pend } = await db.from("squad_invites")
+            .select("id, user_id, invite_approvals(user_id)")
+            .in("squad_id", meusIds).eq("status", "aceito");
+          paraAprovar = (pend ?? []).filter((c: any) =>
+            c.user_id !== user.id && !c.invite_approvals?.some((a: any) => a.user_id === user.id)).length;
+        }
+
+        return ok({
+          perfil, squads: squads ?? [],
+          notificacoes_nao_lidas: naoLidas ?? 0,
+          convites_pendentes: (convParaMim?.length ?? 0) + paraAprovar,
+        });
       }
       if (metodo === "PATCH") {
         const campos: any = {};

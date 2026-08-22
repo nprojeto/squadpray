@@ -33,7 +33,7 @@
 
   h1, h2, h3 { @apply font-display uppercase tracking-tight leading-[.95]; }
   ::selection { background: #f5ce16; color: #151310; }
-  img { @apply border-2 border-tinta; }
+  
 
   *:focus-visible {
     outline: 3px solid #f04e23;

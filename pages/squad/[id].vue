@@ -165,11 +165,11 @@ function jaConfirmei(f: any) {
         </p>
       </div>
       <div class="flex -space-x-2">
-        <span
+        <AvatarPerfil
           v-for="m in membros" :key="m.id"
-          :title="m.profiles.nome"
-          class="w-9 h-9 rounded-full bg-cartao border-2 border-tinta grid place-items-center text-xs"
-        >{{ m.profiles.nome.slice(0, 2).toUpperCase() }}</span>
+          :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="40"
+          :selo="squad.selo_dourado" :streak="squad.streak_atual"
+        />
       </div>
     </header>
 
@@ -350,7 +350,7 @@ function jaConfirmei(f: any) {
               </p>
               <div class="grid sm:grid-cols-2 gap-4">
                 <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
-                  <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover" />
+                  <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover border-b-2 border-tinta" />
                   <div class="p-4">
                     <p class="text-sm">{{ f.profiles?.nome }}</p>
                     <p v-if="f.legenda" class="text-xs text-fumaca mt-1">{{ f.legenda }}</p>
@@ -390,7 +390,7 @@ function jaConfirmei(f: any) {
       <section v-if="aba === 'galeria'" class="mt-8">
         <div class="grid sm:grid-cols-3 gap-4">
           <figure v-for="f in dados.fotos" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
-            <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-40 object-cover" />
+            <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-40 object-cover border-b-2 border-tinta" />
             <figcaption class="p-3 text-xs">
               <span class="text-tinta">{{ f.profiles?.nome }}</span>
               <span class="text-fumaca block mt-0.5">{{ dataBR(f.created_at) }}</span>
@@ -407,7 +407,8 @@ function jaConfirmei(f: any) {
           <ol class="space-y-2">
             <li v-for="(m, i) in membros" :key="m.id" class="flex items-center gap-3 text-sm">
               <span class="font-mono text-fumaca w-6">{{ i + 1 }}</span>
-              <span class="flex-1">{{ m.profiles.nome }}</span>
+              <AvatarPerfil :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="32" />
+              <span class="flex-1 font-bold">{{ m.profiles.nome }}</span>
               <span v-if="m.papel === 'criador'" class="rotulo">criador</span>
               <span class="font-mono text-xs text-laranja">{{ Number(m.profiles.pontos_total).toFixed(0) }} pts</span>
             </li>

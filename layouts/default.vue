@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { perfil, naoLidas, carregar, sair, logado, falha } = useSessao();
+const { perfil, convitesPendentes, carregar, sair, logado, falha, temSelo, melhorStreak } = useSessao();
 const { escuro, alternar, iniciar } = useTema();
 const menuAberto = ref(false);
 onMounted(() => { iniciar(); carregar(); });
@@ -20,11 +20,18 @@ onMounted(() => { iniciar(); carregar(); });
           <NuxtLink to="/painel" class="btn-fantasma">Meus squads</NuxtLink>
           <NuxtLink to="/convites" class="btn-fantasma relative">
             Convites
-            <span v-if="naoLidas" class="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-laranja border border-tinta" />
+            <span
+              v-if="convitesPendentes"
+              class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-laranja text-papel
+                     border-2 border-tinta grid place-items-center text-[11px] font-bold"
+            >{{ convitesPendentes }}</span>
           </NuxtLink>
-          <NuxtLink to="/perfil" class="btn-fantasma">
-            {{ perfil?.nome?.split(' ')[0] }}
-            <span class="font-mono font-bold ml-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
+          <NuxtLink to="/perfil" class="btn-fantasma !gap-2">
+            <AvatarPerfil
+              :url="perfil?.avatar_url" :nome="perfil?.nome"
+              :tamanho="30" :selo="temSelo" :streak="melhorStreak"
+            />
+            <span class="font-mono font-bold">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
           </NuxtLink>
           <NuxtLink to="/historico" class="btn-fantasma">Histórico</NuxtLink>
           <button class="btn-fantasma" @click="sair">Sair</button>
