@@ -1,0 +1,184 @@
+// ============================================================
+//  api.ts — tudo que o app fala com o Supabase passa por aqui
+// ============================================================
+
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { cfg } from "./config";
+
+let _sb: SupabaseClient | null = null;
+
+export function supabase(): SupabaseClient {
+  if (_sb) return _sb;
+  _sb = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  });
+  return _sb;
+}
+
+function baseUrl(): string {
+  return `${cfg.supabaseUrl}/functions/v1/api`;
+}
+
+async function chamar<T = any>(
+  rota: string,
+  opcoes: { metodo?: string; corpo?: any } = {},
+): Promise<T> {
+  const { metodo = "GET", corpo } = opcoes;
+  if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+    throw new Error("O site ainda não foi conectado ao Supabase. Edite o arquivo config.json com sua URL e sua chave.");
+  }
+  const { data } = await supabase().auth.getSession();
+  const token = data.session?.access_token;
+
+  const resp = await fetch(baseUrl() + rota, {
+    method: metodo,
+    headers: {
+      "Content-Type": "application/json",
+      apikey: cfg.supabaseAnonKey,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(json?.erro || "Não foi possível concluir. Tente de novo.");
+  return json as T;
+}
+
+// ---------- tipos ----------
+export type TipoSquad =
+  | "leitura_biblica" | "livros" | "devocional"
+  | "oracao" | "jejum" | "celebracao" | "gdc";
+
+export interface Perfil {
+  id: string; nome: string; email: string; avatar_url?: string;
+  bio?: string; timezone: string; pontos_total: number;
+}
+
+export interface Squad {
+  id: string; nome: string; tipo: TipoSquad; objetivo?: string; status: string;
+  data_inicio: string; data_fim: string; streak_atual: number; streak_recorde: number;
+  selo_dourado: boolean; pontos_total: number; total_periodos: number;
+  valor_periodo: number; codigo_convite: string; criado_por: string;
+  qtd_membros: number; periodos_concluidos: number;
+}
+
+export interface Periodo {
+  id: string; indice: number; data_inicio: string; data_fim: string;
+  status: "aguardando" | "em_andamento" | "concluido" | "falhou";
+  pontos: number; autor_id?: string; profiles?: { nome: string; avatar_url?: string };
+}
+
+// ---------- catálogo ----------
+export const TIPOS_SQUAD: Record<TipoSquad, { nome: string; frequencia: string; verbo: string }> = {
+  leitura_biblica: { nome: "Leitura Bíblica", frequencia: "diário", verbo: "escrever a leitura do dia" },
+  livros:          { nome: "Livros",          frequencia: "diário", verbo: "escrever sobre o capítulo" },
+  devocional:      { nome: "Devocional",      frequencia: "diário", verbo: "escrever o devocional" },
+  oracao:          { nome: "Oração",          frequencia: "diário", verbo: "registrar a oração do dia" },
+  jejum:           { nome: "Jejum",           frequencia: "diário", verbo: "registrar o jejum do dia" },
+  celebracao:      { nome: "Celebração",      frequencia: "semanal", verbo: "enviar a foto da celebração" },
+  gdc:             { nome: "GDC",             frequencia: "semanal", verbo: "enviar a foto do GDC" },
+};
+
+export const ehSemanal = (t: TipoSquad) => t === "celebracao" || t === "gdc";
+export const precisaObjetivo = (t: TipoSquad) => t === "oracao" || t === "jejum";
+
+// ---------- autenticação ----------
+export const auth = {
+  async cadastrar(nome: string, email: string, senha: string) {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const { data, error } = await supabase().auth.signUp({
+      email, password: senha, options: { data: { nome, timezone } },
+    });
+    if (error) throw new Error(traduzir(error.message));
+    return data;
+  },
+  async entrar(email: string, senha: string) {
+    const { data, error } = await supabase().auth.signInWithPassword({ email, password: senha });
+    if (error) throw new Error(traduzir(error.message));
+    return data;
+  },
+  async sair() { await supabase().auth.signOut(); },
+  async sessao() { return (await supabase().auth.getSession()).data.session; },
+  async recuperarSenha(email: string) {
+    const { error } = await supabase().auth.resetPasswordForEmail(email);
+    if (error) throw new Error(traduzir(error.message));
+  },
+};
+
+function traduzir(msg: string) {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login")) return "E-mail ou senha incorretos.";
+  if (m.includes("already registered")) return "Este e-mail já tem cadastro.";
+  if (m.includes("password should be")) return "A senha precisa ter pelo menos 6 caracteres.";
+  if (m.includes("email not confirmed")) return "Confirme seu e-mail antes de entrar.";
+  if (m.includes("rate limit")) return "Muitas tentativas. Aguarde um minuto.";
+  return msg;
+}
+
+// ---------- API ----------
+export const api = {
+  meuPainel: () => chamar("/me"),
+  atualizarPerfil: (dados: Partial<Perfil>) => chamar("/me", { metodo: "PATCH", corpo: dados }),
+
+  listarSquads: () => chamar<{ squads: Squad[] }>("/squads"),
+  criarSquad: (dados: {
+    nome: string; tipo: TipoSquad; objetivo?: string; descricao?: string;
+    data_inicio: string; data_fim: string;
+  }) => chamar("/squads", { metodo: "POST", corpo: dados }),
+  verSquad: (id: string) => chamar(`/squads/${id}`),
+  ativarSquad: (id: string) => chamar(`/squads/${id}/ativar`, { metodo: "POST" }),
+  convidar: (id: string, email: string) =>
+    chamar(`/squads/${id}/convidar`, { metodo: "POST", corpo: { email } }),
+  calendario: (id: string) => chamar(`/squads/${id}/calendario`),
+  galeria: (id: string) => chamar(`/squads/${id}/galeria`),
+  sairDoSquad: (id: string) => chamar(`/squads/${id}/sair`, { metodo: "DELETE" }),
+
+  publicarArtigo: (squadId: string, dados: {
+    period_id: string; titulo?: string; referencia?: string; conteudo: string;
+  }) => chamar(`/squads/${squadId}/artigo`, { metodo: "POST", corpo: dados }),
+  reagir: (postId: string, emoji: string) =>
+    chamar(`/posts/${postId}/reagir`, { metodo: "POST", corpo: { emoji } }),
+
+  enviarFoto: (squadId: string, dados: { period_id: string; foto_url: string; legenda?: string }) =>
+    chamar(`/squads/${squadId}/foto`, { metodo: "POST", corpo: dados }),
+  confirmarFoto: (fotoId: string) => chamar(`/fotos/${fotoId}/confirmar`, { metodo: "POST" }),
+
+  convites: () => chamar("/convites"),
+  responderConvite: (id: string, aceitar: boolean) =>
+    chamar(`/convites/${id}/responder`, { metodo: "POST", corpo: { aceitar } }),
+  aprovarConvite: (id: string, aprovado: boolean) =>
+    chamar(`/convites/${id}/aprovar`, { metodo: "POST", corpo: { aprovado } }),
+
+  notificacoes: () => chamar("/notificacoes"),
+  marcarLidas: () => chamar("/notificacoes/ler", { metodo: "POST" }),
+  emojis: () => chamar("/emojis"),
+};
+
+// ---------- upload da foto semanal ----------
+export async function enviarImagem(arquivo: File, squadId: string): Promise<string> {
+  const ext = arquivo.name.split(".").pop() || "jpg";
+  const caminho = `${squadId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase().storage.from("galeria").upload(caminho, arquivo, {
+    cacheControl: "3600", upsert: false,
+  });
+  if (error) throw new Error("Não foi possível enviar a foto. Tente outra imagem.");
+  return supabase().storage.from("galeria").getPublicUrl(caminho).data.publicUrl;
+}
+
+// ---------- datas ----------
+export function dataBR(iso: string) {
+  const [a, m, d] = iso.slice(0, 10).split("-");
+  return `${d}/${m}/${a}`;
+}
+
+export function proximaSegunda(base = new Date()): string {
+  const d = new Date(base);
+  const dow = d.getDay();
+  d.setDate(d.getDate() + (dow === 1 ? 0 : (8 - dow) % 7));
+  return d.toISOString().slice(0, 10);
+}
+
+export function hojeISO() {
+  return new Date().toISOString().slice(0, 10);
+}

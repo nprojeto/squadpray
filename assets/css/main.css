@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background:
+      radial-gradient(90rem 50rem at 15% -10%, #241f5e 0%, transparent 55%),
+      radial-gradient(70rem 40rem at 95% 0%, #3b1f4d 0%, transparent 50%),
+      #0b0a1f;
+    background-attachment: fixed;
+  }
+  body {
+    @apply font-corpo text-texto antialiased min-h-screen;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+    font-variation-settings: "SOFT" 20, "WONK" 1;
+  }
+  ::selection { background: #e9b949; color: #0b0a1f; }
+  *:focus-visible {
+    outline: 2px solid #e9b949;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  input, textarea, select {
+    @apply bg-noite/60 border border-borda rounded-xl px-4 py-3 w-full text-texto
+           placeholder:text-sussurro/60 transition;
+  }
+  input:focus, textarea:focus, select:focus {
+    @apply border-lilas outline-none;
+  }
+  label { @apply block text-sm text-sussurro mb-1.5; }
+}
+
+@layer components {
+  .painel {
+    @apply bg-painel/55 border border-borda rounded-2xl backdrop-blur-sm shadow-vitral;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-medium
+           transition active:scale-[.97] disabled:opacity-40 disabled:pointer-events-none;
+  }
+  .btn-ouro { @apply btn bg-ouro text-noite hover:brightness-110 font-bold; }
+  .btn-vidro { @apply btn bg-lilas/12 text-texto border border-lilas/40 hover:bg-lilas/22; }
+  .btn-fantasma { @apply btn text-sussurro hover:text-texto hover:bg-lilas/10; }
+  .rotulo {
+    @apply text-[11px] uppercase tracking-[.18em] text-sussurro font-mono font-medium;
+  }
+  .chumbo {
+    /* linha de chumbo do vitral */
+    @apply border-t border-borda/70;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}

@@ -1,0 +1,10 @@
+VIGÍLIA — código-fonte para deploy automático (GitHub Actions)
+===============================================================
+
+O GitHub vai compilar e publicar o site sozinho a cada alteração.
+
+O arquivo deploy.yml.txt NÃO é para ser arrastado.
+Ele é criado à mão dentro do GitHub, conforme as instruções do chat.
+
+As chaves do Supabase já estão em public/config.json.
+Nada aqui precisa ser editado.
