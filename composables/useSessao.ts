@@ -1,33 +1,50 @@
-import { auth, api, type Perfil, type Squad } from "~/lib/api";
+import { auth, api, supabase, type Perfil, type Squad } from "~/lib/api";
 
 const perfil = ref<Perfil | null>(null);
 const squads = ref<Squad[]>([]);
 const naoLidas = ref(0);
 const carregando = ref(true);
+const temSessao = ref(false);
+const falha = ref<string | null>(null);
 
 export function useSessao() {
   async function carregar() {
     carregando.value = true;
+    falha.value = null;
     try {
       const s = await auth.sessao();
+      temSessao.value = !!s;
       if (!s) { perfil.value = null; squads.value = []; return; }
+
+      // reserva: mesmo que a API falhe, o menu continua funcionando
+      perfil.value = perfil.value ?? {
+        id: s.user.id,
+        nome: (s.user.user_metadata?.nome as string) || (s.user.email ?? "").split("@")[0],
+        email: s.user.email ?? "",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        pontos_total: 0,
+      } as Perfil;
+
       const r: any = await api.meuPainel();
-      perfil.value = r.perfil;
+      if (r.perfil) perfil.value = r.perfil;
       squads.value = r.squads ?? [];
       naoLidas.value = r.notificacoes_nao_lidas ?? 0;
-    } catch { perfil.value = null; }
-    finally { carregando.value = false; }
+    } catch (e: any) {
+      falha.value = e?.message ?? "Não foi possível carregar seus dados.";
+    } finally {
+      carregando.value = false;
+    }
   }
 
   async function sair() {
     await auth.sair();
-    perfil.value = null; squads.value = [];
+    perfil.value = null; squads.value = []; temSessao.value = false;
     await navigateTo("/");
   }
 
-  const logado = computed(() => !!perfil.value);
+  const logado = computed(() => temSessao.value);
   const meuSquadCriado = computed(() =>
     squads.value.find((s) => s.criado_por === perfil.value?.id));
 
-  return { perfil, squads, naoLidas, carregando, logado, meuSquadCriado, carregar, sair };
+  return { perfil, squads, naoLidas, carregando, falha, logado, meuSquadCriado, carregar, sair };
 }

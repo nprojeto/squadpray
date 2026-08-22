@@ -1,4 +1,2 @@
-SQUADPRAY — código-fonte
-=========================
-As chaves do Supabase já estão em public/config.json.
-Nada aqui precisa ser editado. Suba tudo para o repositório squadpray.
+SQUADPRAY — codigo-fonte
+Suba tudo para o repositorio squadpray.

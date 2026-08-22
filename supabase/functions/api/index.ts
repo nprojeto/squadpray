@@ -107,7 +107,16 @@ Deno.serve(async (req) => {
     // ============ PERFIL ============
     if (seg[0] === "me") {
       if (metodo === "GET") {
-        const { data: perfil } = await db.from("profiles").select("*").eq("id", user.id).single();
+        let { data: perfil } = await db.from("profiles").select("*").eq("id", user.id).maybeSingle();
+        if (!perfil) {
+          // conta criada antes do gatilho: cria o perfil agora
+          const { data: novo } = await db.from("profiles").insert({
+            id: user.id,
+            nome: (user.user_metadata?.nome as string) || (user.email ?? "").split("@")[0],
+            email: user.email ?? "",
+          }).select().single();
+          perfil = novo;
+        }
         const { data: squads } = await db.from("v_squad_resumo")
           .select("*")
           .in("id",

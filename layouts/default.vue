@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { perfil, naoLidas, carregar, sair, logado } = useSessao();
+const { perfil, naoLidas, carregar, sair, logado, falha } = useSessao();
 const { escuro, alternar, iniciar } = useTema();
 const menuAberto = ref(false);
 onMounted(() => { iniciar(); carregar(); });
@@ -49,6 +49,7 @@ onMounted(() => { iniciar(); carregar(); });
     </header>
 
     <main class="flex-1 max-w-5xl w-full mx-auto px-5 py-8 sm:py-12">
+      <AvisoErro v-if="falha && logado" :mensagem="falha" class="mb-6" />
       <slot />
     </main>
 
