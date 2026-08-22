@@ -18,7 +18,7 @@ const encerrados = computed(() => squads.value.filter(s => s.status === "cancela
 
 <template>
   <div>
-    <span class="rotulo text-xl">o que já ficou pra trás</span>
+    <span class="rotulo text-xl">o melhor está por vir</span>
     <h1 class="text-5xl sm:text-6xl mt-2">Histórico</h1>
 
     <div class="painel p-6 mt-8 flex items-center justify-between gap-6 flex-wrap">

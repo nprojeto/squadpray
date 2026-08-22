@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     baseURL: process.env.NUXT_APP_BASE_URL || "/",
     buildAssetsDir: "assets",
     head: {
-      title: "SquadPray — streaks de fé em squad",
+      title: "EleveSquad — streaks de fé em squad",
       htmlAttrs: { lang: "pt-BR" },
       meta: [
         { charset: "utf-8" },

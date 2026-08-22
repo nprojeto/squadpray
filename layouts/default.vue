@@ -11,6 +11,21 @@ watch(gaveta, (v) => {
   if (import.meta.client) document.body.style.overflow = v ? "hidden" : "";
 });
 
+const recado = computed(() => {
+  const p = rota.path;
+  if (p.startsWith("/squad/")) return "o streak só conta quando todo mundo cumpre";
+  if (p === "/painel") return "um squad de cada vez, um dia de cada vez";
+  if (p === "/rede") return "ninguém caminha sozinho por aqui";
+  if (p === "/convites") return "todo squad começa com um convite";
+  if (p === "/historico") return "o que vocês construíram fica guardado";
+  if (p === "/perfil") return "sua caminhada, do seu jeito";
+  if (p === "/notificacoes") return "nada passa despercebido";
+  if (p === "/criar") return "junte três e comece";
+  if (p.startsWith("/prayer/")) return "gente de fé se encontra";
+  if (p === "/cadastro") return "bem-vindo à rede";
+  return "fé que se pratica em grupo";
+});
+
 const links = computed(() => [
   { para: "/painel", texto: "Meus squads", contador: 0 },
   { para: "/rede", texto: "Rede", contador: 0 },
@@ -43,7 +58,7 @@ const links = computed(() => [
           <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
             <EmojiCristao codigo="oracao" :tamanho="22" />
           </span>
-          <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">SquadPray</span>
+          <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">EleveSquad</span>
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
@@ -152,9 +167,7 @@ const links = computed(() => [
     </main>
 
     <footer class="border-t-2 border-tinta py-6 text-center">
-      <p class="font-marca text-xl text-laranja -rotate-1 inline-block">
-        o streak só conta quando todo mundo cumpre
-      </p>
+      <p class="font-marca text-xl text-laranja -rotate-1 inline-block">{{ recado }}</p>
     </footer>
   </div>
 </template>

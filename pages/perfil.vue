@@ -64,12 +64,12 @@ async function salvar() {
     <h1 class="text-5xl sm:text-6xl mt-2">Meu perfil</h1>
 
     <section class="painel p-6 sm:p-7 mt-8">
-      <div class="flex items-center gap-5 flex-wrap">
+      <div class="flex flex-col items-center text-center gap-4 sm:flex-row sm:text-left sm:gap-5">
         <AvatarPerfil
           :url="perfil?.avatar_url" :nome="perfil?.nome"
           :tamanho="96" :selo="temSelo" :streak="melhorStreak"
         />
-        <div class="flex-1 min-w-[200px]">
+        <div class="flex-1 min-w-0">
           <p class="font-display text-3xl">{{ perfil?.nome }}</p>
           <p v-if="temSelo" class="font-marca text-lg text-laranja">
             selo dourado ativo · {{ melhorStreak }} de streak
@@ -78,7 +78,7 @@ async function salvar() {
             a coroa aparece aqui quando um squad seu chegar a 7 seguidos
           </p>
 
-          <div class="flex flex-wrap gap-2 mt-3">
+          <div class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
             <button class="btn-vidro !py-2 text-xs" :disabled="enviandoFoto" @click="campoFoto?.click()">
               {{ enviandoFoto ? "Enviando…" : (perfil?.avatar_url ? "Trocar foto" : "Colocar foto") }}
             </button>
