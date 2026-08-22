@@ -4,9 +4,7 @@ defineProps<{ mensagem?: string | null; tipo?: "erro" | "ok" }>();
 <template>
   <p
     v-if="mensagem"
-    class="rounded-xl px-4 py-3 text-sm border"
-    :class="tipo === 'ok'
-      ? 'border-esmeralda/40 bg-esmeralda/10 text-esmeralda'
-      : 'border-rubi/40 bg-rubi/10 text-rubi'"
+    class="rounded-lg px-4 py-3 text-sm font-semibold border-2 border-tinta shadow-blocoP"
+    :class="tipo === 'ok' ? 'bg-verde text-papel' : 'bg-laranja text-papel'"
   >{{ mensagem }}</p>
 </template>

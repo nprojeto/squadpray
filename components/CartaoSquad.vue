@@ -1,43 +1,46 @@
 <script setup lang="ts">
 import { TIPOS_SQUAD, dataBR, ehSemanal, type Squad } from "~/lib/api";
-defineProps<{ squad: Squad }>();
+const props = defineProps<{ squad: Squad }>();
+
+const cores: Record<string, string> = {
+  leitura_biblica: "bg-amarelo", livros: "bg-roxo", devocional: "bg-verde text-papel",
+  oracao: "bg-laranja text-papel", jejum: "bg-rosa text-papel",
+  celebracao: "bg-amarelo", gdc: "bg-roxo",
+};
+const cor = computed(() => cores[props.squad.tipo] ?? "bg-amarelo");
 </script>
 
 <template>
   <NuxtLink
     :to="`/squad/${squad.id}`"
-    class="painel p-5 block transition hover:border-lilas/50 hover:-translate-y-0.5"
+    class="painel p-5 block transition hover:-translate-y-1 hover:shadow-[7px_7px_0_#151310]"
   >
-    <div class="flex items-start justify-between gap-4">
-      <div class="min-w-0">
-        <p class="rotulo">{{ TIPOS_SQUAD[squad.tipo].nome }}</p>
-        <h3 class="text-xl mt-1 truncate">{{ squad.nome }}</h3>
-      </div>
-      <EmojiCristao v-if="squad.selo_dourado" codigo="coroa" :tamanho="26" />
+    <div class="flex items-start justify-between gap-3">
+      <span class="faixa text-sm -rotate-1" :class="cor">{{ TIPOS_SQUAD[squad.tipo].nome }}</span>
+      <EmojiCristao v-if="squad.selo_dourado" codigo="coroa" :tamanho="28" />
     </div>
 
-    <div class="flex items-end justify-between mt-5">
-      <div>
-        <span class="font-mono text-3xl font-extrabold" :class="squad.selo_dourado ? 'text-ouro' : 'text-texto'">
-          {{ squad.streak_atual }}
-        </span>
-        <span class="text-sussurro text-sm ml-1.5">
+    <h3 class="text-2xl mt-4 break-words">{{ squad.nome }}</h3>
+
+    <div class="flex items-end justify-between mt-4">
+      <div class="flex items-baseline gap-1.5">
+        <span class="font-display text-5xl leading-none">{{ squad.streak_atual }}</span>
+        <span class="font-marca text-xl text-laranja">
           {{ ehSemanal(squad.tipo) ? 'sem.' : 'dias' }}
         </span>
       </div>
-      <div class="text-right text-xs text-sussurro">
-        <p>{{ squad.qtd_membros }} de 6 pessoas</p>
-        <p class="font-mono">{{ Number(squad.pontos_total).toFixed(1) }} pts</p>
+      <div class="text-right text-xs font-semibold text-fumaca">
+        <p>{{ squad.qtd_membros }}/6 pessoas</p>
+        <p class="font-mono text-tinta">{{ Number(squad.pontos_total).toFixed(1) }} pts</p>
       </div>
     </div>
 
-    <div class="chumbo mt-4 pt-3 flex items-center justify-between text-xs text-sussurro">
-      <span>{{ dataBR(squad.data_inicio) }} — {{ dataBR(squad.data_fim) }}</span>
+    <div class="chumbo mt-4 pt-3 flex items-center justify-between text-xs font-semibold">
+      <span class="text-fumaca">{{ dataBR(squad.data_inicio) }} — {{ dataBR(squad.data_fim) }}</span>
       <span
-        class="px-2 py-0.5 rounded-full border text-[10px] uppercase tracking-wider"
-        :class="squad.status === 'ativo'
-          ? 'border-esmeralda/50 text-esmeralda'
-          : squad.status === 'rascunho' ? 'border-ouro/50 text-ouro' : 'border-borda'"
+        class="px-2 py-0.5 rounded-full border-2 border-tinta text-[10px] uppercase"
+        :class="squad.status === 'ativo' ? 'bg-verde text-papel'
+              : squad.status === 'rascunho' ? 'bg-amarelo' : 'bg-papel text-fumaca'"
       >{{ squad.status === 'rascunho' ? 'montando' : squad.status }}</span>
     </div>
   </NuxtLink>

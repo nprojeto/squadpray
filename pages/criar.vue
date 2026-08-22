@@ -50,15 +50,15 @@ async function criar() {
 
 <template>
   <div class="max-w-2xl mx-auto">
-    <NuxtLink to="/painel" class="rotulo hover:text-texto">← meus squads</NuxtLink>
+    <NuxtLink to="/painel" class="rotulo hover:text-tinta">← meus squads</NuxtLink>
     <h1 class="text-4xl mt-4">Criar meu squad</h1>
-    <p class="text-sussurro mt-2">Cada pessoa cria apenas um. Você pode participar de quantos for convidado.</p>
+    <p class="text-fumaca mt-2">Cada pessoa cria apenas um. Você pode participar de quantos for convidado.</p>
 
     <div v-if="meuSquadCriado" class="painel p-7 mt-8 text-center">
       <EmojiCristao codigo="coroa" :tamanho="40" class="mx-auto" />
       <h2 class="text-2xl mt-4">Você já tem um squad</h2>
-      <p class="text-sussurro mt-2 text-sm">
-        Seu squad é <span class="text-texto">{{ meuSquadCriado.nome }}</span>.
+      <p class="text-fumaca mt-2 text-sm">
+        Seu squad é <span class="text-tinta">{{ meuSquadCriado.nome }}</span>.
       </p>
       <NuxtLink :to="`/squad/${meuSquadCriado.id}`" class="btn-ouro mt-6">Abrir meu squad</NuxtLink>
     </div>
@@ -70,11 +70,11 @@ async function criar() {
           <button
             v-for="(t, k) in TIPOS_SQUAD" :key="k" type="button"
             class="rounded-xl border px-3 py-3 text-left transition"
-            :class="tipo === k ? 'border-ouro bg-ouro/10' : 'border-borda bg-noite/40 hover:border-lilas'"
+            :class="tipo === k ? 'border-ouro bg-amarelo' : 'border-tinta bg-papel hover:border-laranja'"
             @click="tipo = k as TipoSquad"
           >
             <span class="block text-sm">{{ t.nome }}</span>
-            <span class="block text-[10px] uppercase tracking-wider text-sussurro mt-0.5 font-mono">{{ t.frequencia }}</span>
+            <span class="block text-[10px] uppercase tracking-wider text-fumaca mt-0.5 font-mono">{{ t.frequencia }}</span>
           </button>
         </div>
       </div>
@@ -88,7 +88,7 @@ async function criar() {
         <label for="o">Objetivo deste squad</label>
         <textarea id="o" v-model="objetivo" rows="3" required
           placeholder="Pelo que este squad vai orar ou jejuar?" />
-        <p class="text-xs text-sussurro mt-1">Obrigatório para oração e jejum.</p>
+        <p class="text-xs text-fumaca mt-1">Obrigatório para oração e jejum.</p>
       </div>
 
       <div>
@@ -100,7 +100,7 @@ async function criar() {
         <div>
           <label for="i">Começa em</label>
           <input id="i" v-model="inicio" type="date" required :min="hojeISO()" />
-          <p v-if="semanal" class="text-xs text-ouro mt-1">
+          <p v-if="semanal" class="text-xs text-laranja mt-1">
             Ciclos semanais começam na segunda: {{ dataBR(inicioReal) }}
           </p>
         </div>
@@ -112,11 +112,11 @@ async function criar() {
 
       <div v-if="totalPeriodos" class="chumbo pt-5">
         <p class="rotulo">Como fica a pontuação</p>
-        <p class="text-sussurro text-sm mt-2">
-          <span class="font-mono text-texto">{{ totalPeriodos }}</span>
+        <p class="text-fumaca text-sm mt-2">
+          <span class="font-mono text-tinta">{{ totalPeriodos }}</span>
           {{ semanal ? 'semanas' : 'dias' }} no ciclo · cada
           {{ semanal ? 'semana cumprida' : 'dia cumprido' }} por todos vale
-          <span class="font-mono text-ouro">{{ valorPeriodo.toFixed(2) }}</span> pontos.
+          <span class="font-mono text-laranja">{{ valorPeriodo.toFixed(2) }}</span> pontos.
           O ciclo inteiro soma 100.
         </p>
       </div>
@@ -126,7 +126,7 @@ async function criar() {
       <button class="btn-ouro w-full" :disabled="salvando">
         {{ salvando ? "Criando…" : "Criar squad e convidar pessoas" }}
       </button>
-      <p class="text-xs text-sussurro text-center">
+      <p class="text-xs text-fumaca text-center">
         O card só abre depois que pelo menos 3 pessoas estiverem dentro.
       </p>
     </form>

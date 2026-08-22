@@ -1,29 +1,21 @@
 <script setup lang="ts">
 import { auth } from "~/lib/api";
 
-const email = ref("");
-const senha = ref("");
-const erro = ref<string | null>(null);
-const carregando = ref(false);
+const email = ref(""); const senha = ref("");
+const erro = ref<string | null>(null); const carregando = ref(false);
 const { carregar } = useSessao();
 
 async function entrar() {
-  erro.value = null;
-  carregando.value = true;
+  erro.value = null; carregando.value = true;
   try {
     await auth.entrar(email.value.trim(), senha.value);
     await carregar();
     await navigateTo("/painel");
-  } catch (e: any) {
-    erro.value = e.message;
-  } finally {
-    carregando.value = false;
-  }
+  } catch (e: any) { erro.value = e.message; }
+  finally { carregando.value = false; }
 }
 
-// vitral vivo do topo: 5 pessoas, um dia da semana
-const linhas = 5;
-const colunas = 14;
+const linhas = 5; const colunas = 14;
 const grade = ref<number[][]>([]);
 const passo = ref(0);
 let timer: any;
@@ -32,11 +24,8 @@ onMounted(() => {
   grade.value = Array.from({ length: linhas }, () => Array(colunas).fill(0));
   timer = setInterval(() => {
     const c = passo.value % colunas;
-    // na coluna 9 uma pessoa falha: o vitral inteiro apaga
     const falha = c === 9;
-    for (let l = 0; l < linhas; l++) {
-      grade.value[l][c] = falha && l === 2 ? 2 : 1;
-    }
+    for (let l = 0; l < linhas; l++) grade.value[l][c] = falha && l === 2 ? 2 : 1;
     if (falha) {
       setTimeout(() => {
         for (let l = 0; l < linhas; l++)
@@ -44,71 +33,80 @@ onMounted(() => {
       }, 900);
     }
     passo.value++;
-    if (passo.value % colunas === 0) {
+    if (passo.value % colunas === 0)
       grade.value = Array.from({ length: linhas }, () => Array(colunas).fill(0));
-    }
   }, 420);
 });
 onUnmounted(() => clearInterval(timer));
+
+const tipos = [
+  { nome: "Oração", cor: "bg-amarelo", ritmo: "diário" },
+  { nome: "Leitura Bíblica", cor: "bg-roxo", ritmo: "diário" },
+  { nome: "Devocional", cor: "bg-laranja text-papel", ritmo: "diário" },
+  { nome: "Jejum", cor: "bg-rosa text-papel", ritmo: "diário" },
+  { nome: "Livros", cor: "bg-verde text-papel", ritmo: "diário" },
+  { nome: "Celebração", cor: "bg-amarelo", ritmo: "semanal" },
+  { nome: "GDC", cor: "bg-roxo", ritmo: "semanal" },
+];
 </script>
 
 <template>
-  <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-12 lg:gap-16 items-start">
-    <!-- tese -->
+  <div class="grid lg:grid-cols-[1.1fr_.9fr] gap-12 lg:gap-14 items-start">
     <section>
-      <p class="rotulo">Oração · Leitura · Devocional · Jejum · Celebração · GDC</p>
+      <span class="rotulo text-xl">todo mundo junto, ou ninguém</span>
 
-      <h1 class="mt-4 text-[2.6rem] sm:text-6xl leading-[1.02] font-black">
-        O streak não é seu.<br />
-        <span class="text-ouro">É do squad inteiro.</span>
+      <h1 class="mt-3 text-6xl sm:text-8xl">
+        O streak<br />não é seu.<br />
+        <span class="bg-laranja text-papel px-3 border-2 border-tinta inline-block -rotate-1 mt-2 shadow-bloco">
+          é do squad
+        </span>
       </h1>
 
-      <p class="mt-6 text-lg text-sussurro max-w-xl leading-relaxed">
-        Um escreve, os outros leem e reagem. Todo mundo cumpre no mesmo dia, ou o
-        vitral apaga e a contagem volta ao zero. Sete dias seguidos e o squad ganha a coroa.
+      <p class="mt-8 text-lg font-medium max-w-xl">
+        Um escreve, os outros leem e reagem. Todo mundo cumpre no mesmo dia — ou a
+        contagem volta pro zero. Sete dias seguidos e o squad ganha a coroa.
       </p>
 
-      <!-- signature: vitral vivo -->
       <div class="painel p-5 sm:p-6 mt-9">
-        <div class="flex items-center justify-between mb-4">
-          <p class="rotulo">Um squad de 5 · duas semanas</p>
-          <p class="text-[11px] text-sussurro">um falha, todos voltam ao zero</p>
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <span class="rotulo">um squad de 5 · duas semanas</span>
+          <span class="font-marca text-lg text-fumaca">um falha, todos voltam ao zero</span>
         </div>
         <div class="space-y-1.5">
           <div v-for="(linha, i) in grade" :key="i" class="flex gap-1.5">
             <span
               v-for="(v, j) in linha" :key="j"
-              class="flex-1 aspect-square rounded-[3px] border transition-all duration-500"
-              :class="{
-                'bg-ouro/85 border-ouro shadow-ouro': v === 1,
-                'bg-rubi/40 border-rubi': v === 2,
-                'bg-noite/60 border-borda': v === 0,
-              }"
+              class="flex-1 aspect-square rounded-[3px] border-2 border-tinta transition-all duration-500"
+              :class="{ 'bg-amarelo': v === 1, 'bg-laranja': v === 2, 'bg-papel border-risco': v === 0 }"
             />
           </div>
         </div>
       </div>
 
-      <dl class="grid grid-cols-3 gap-4 mt-8">
-        <div>
-          <dt class="rotulo">Squad</dt>
-          <dd class="font-mono text-2xl mt-1">3 a 6</dd>
+      <div class="mt-10">
+        <span class="rotulo">temos sete tipos de squad</span>
+        <div class="mt-3 space-y-2">
+          <div
+            v-for="(t, i) in tipos" :key="t.nome"
+            class="flex items-center justify-between border-2 border-tinta px-4 py-2.5 shadow-blocoP"
+            :class="[t.cor, i % 2 ? 'rotate-[.4deg]' : '-rotate-[.5deg]']"
+          >
+            <span class="font-display text-2xl uppercase">{{ t.nome }}</span>
+            <span class="font-bold text-xs uppercase tracking-widest">{{ t.ritmo }}</span>
+          </div>
         </div>
-        <div>
-          <dt class="rotulo">Artigo</dt>
-          <dd class="font-mono text-2xl mt-1">200+</dd>
-        </div>
-        <div>
-          <dt class="rotulo">Ciclo vale</dt>
-          <dd class="font-mono text-2xl mt-1">100 pts</dd>
-        </div>
+      </div>
+
+      <dl class="grid grid-cols-3 gap-4 mt-10">
+        <div><dt class="rotulo">squad</dt><dd class="font-display text-4xl mt-1">3 a 6</dd></div>
+        <div><dt class="rotulo">artigo</dt><dd class="font-display text-4xl mt-1">200+</dd></div>
+        <div><dt class="rotulo">ciclo vale</dt><dd class="font-display text-4xl mt-1">100</dd></div>
       </dl>
     </section>
 
-    <!-- entrar -->
     <section class="painel p-7 sm:p-8 lg:sticky lg:top-24">
-      <h2 class="text-2xl">Entrar</h2>
-      <p class="text-sm text-sussurro mt-1">Seu squad está esperando.</p>
+      <h2 class="text-4xl">Entrar</h2>
+      <p class="font-marca text-xl text-laranja mt-1">seu squad tá esperando</p>
 
       <form class="mt-6 space-y-4" @submit.prevent="entrar">
         <div>
@@ -127,9 +125,9 @@ onUnmounted(() => clearInterval(timer));
         </button>
       </form>
 
-      <div class="chumbo mt-6 pt-5 text-sm text-sussurro">
+      <div class="chumbo mt-6 pt-5 text-sm font-semibold">
         Ainda não tem conta?
-        <NuxtLink to="/cadastro" class="text-lilas hover:text-ouro underline underline-offset-4">
+        <NuxtLink to="/cadastro" class="underline decoration-laranja decoration-4 underline-offset-4 hover:text-laranja">
           Criar minha conta
         </NuxtLink>
       </div>

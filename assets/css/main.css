@@ -4,52 +4,62 @@
 
 @layer base {
   html {
-    background:
-      radial-gradient(90rem 50rem at 15% -10%, #241f5e 0%, transparent 55%),
-      radial-gradient(70rem 40rem at 95% 0%, #3b1f4d 0%, transparent 50%),
-      #0b0a1f;
-    background-attachment: fixed;
+    background-color: #f4f0e2;
+    background-image:
+      radial-gradient(rgba(21, 19, 16, .045) 1px, transparent 1px),
+      radial-gradient(rgba(21, 19, 16, .03) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 2px 3px;
   }
-  body {
-    @apply font-corpo text-texto antialiased min-h-screen;
-  }
-  h1, h2, h3 {
-    @apply font-display;
-    font-variation-settings: "SOFT" 20, "WONK" 1;
-  }
-  ::selection { background: #e9b949; color: #0b0a1f; }
+  body { @apply font-corpo text-tinta antialiased min-h-screen; }
+
+  h1, h2, h3 { @apply font-display uppercase tracking-tight leading-[.95]; }
+  ::selection { background: #f5ce16; color: #151310; }
+
   *:focus-visible {
-    outline: 2px solid #e9b949;
-    outline-offset: 3px;
-    border-radius: 6px;
+    outline: 3px solid #f04e23;
+    outline-offset: 2px;
   }
+
   input, textarea, select {
-    @apply bg-noite/60 border border-borda rounded-xl px-4 py-3 w-full text-texto
-           placeholder:text-sussurro/60 transition;
+    @apply bg-cartao border-2 border-tinta rounded-lg px-4 py-3 w-full text-tinta
+           placeholder:text-fumaca/70 transition;
   }
   input:focus, textarea:focus, select:focus {
-    @apply border-lilas outline-none;
+    @apply outline-none shadow-blocoP;
   }
-  label { @apply block text-sm text-sussurro mb-1.5; }
+  label { @apply block text-sm font-semibold mb-1.5; }
 }
 
 @layer components {
   .painel {
-    @apply bg-painel/55 border border-borda rounded-2xl backdrop-blur-sm shadow-vitral;
+    @apply bg-cartao border-2 border-tinta rounded-xl shadow-bloco;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-medium
-           transition active:scale-[.97] disabled:opacity-40 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3
+           border-2 border-tinta font-bold uppercase tracking-wide text-sm
+           transition-transform active:translate-x-[2px] active:translate-y-[2px]
+           disabled:opacity-40 disabled:pointer-events-none;
   }
-  .btn-ouro { @apply btn bg-ouro text-noite hover:brightness-110 font-bold; }
-  .btn-vidro { @apply btn bg-lilas/12 text-texto border border-lilas/40 hover:bg-lilas/22; }
-  .btn-fantasma { @apply btn text-sussurro hover:text-texto hover:bg-lilas/10; }
+  .btn-ouro {
+    @apply btn bg-amarelo text-tinta shadow-blocoP hover:bg-laranja hover:text-papel;
+  }
+  .btn-vidro {
+    @apply btn bg-cartao text-tinta shadow-blocoP hover:bg-roxo;
+  }
+  .btn-fantasma {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
+           font-semibold text-tinta/70 hover:text-tinta hover:bg-amarelo/45 transition;
+  }
   .rotulo {
-    @apply text-[11px] uppercase tracking-[.18em] text-sussurro font-mono font-medium;
+    @apply font-marca text-lg text-laranja leading-none -rotate-1 inline-block;
   }
-  .chumbo {
-    /* linha de chumbo do vitral */
-    @apply border-t border-borda/70;
+  .chumbo { @apply border-t-2 border-dashed border-risco; }
+
+  /* faixa colorida inclinada, como os cartazes */
+  .faixa {
+    @apply inline-block px-4 py-1.5 border-2 border-tinta font-display uppercase
+           shadow-blocoP;
   }
 }
 

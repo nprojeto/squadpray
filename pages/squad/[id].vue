@@ -122,17 +122,17 @@ function jaConfirmei(f: any) {
 </script>
 
 <template>
-  <div v-if="carregando" class="text-sussurro">Carregando o squad…</div>
+  <div v-if="carregando" class="text-fumaca">Carregando o squad…</div>
   <AvisoErro v-else-if="!squad" :mensagem="erro || 'Squad não encontrado.'" />
 
   <div v-else>
-    <NuxtLink to="/painel" class="rotulo hover:text-texto">← meus squads</NuxtLink>
+    <NuxtLink to="/painel" class="rotulo hover:text-tinta">← meus squads</NuxtLink>
 
     <header class="mt-4 flex flex-wrap items-start justify-between gap-4">
       <div>
         <p class="rotulo">{{ TIPOS_SQUAD[squad.tipo].nome }} · {{ dataBR(squad.data_inicio) }} a {{ dataBR(squad.data_fim) }}</p>
         <h1 class="text-4xl mt-2">{{ squad.nome }}</h1>
-        <p v-if="squad.objetivo" class="text-sussurro mt-3 max-w-2xl">
+        <p v-if="squad.objetivo" class="text-fumaca mt-3 max-w-2xl">
           <span class="rotulo">Objetivo</span><br />{{ squad.objetivo }}
         </p>
       </div>
@@ -140,7 +140,7 @@ function jaConfirmei(f: any) {
         <span
           v-for="m in membros" :key="m.id"
           :title="m.profiles.nome"
-          class="w-9 h-9 rounded-full bg-painel border border-borda grid place-items-center text-xs"
+          class="w-9 h-9 rounded-full bg-cartao border-2 border-tinta grid place-items-center text-xs"
         >{{ m.profiles.nome.slice(0, 2).toUpperCase() }}</span>
       </div>
     </header>
@@ -151,7 +151,7 @@ function jaConfirmei(f: any) {
     <!-- squad ainda montando -->
     <section v-if="squad.status === 'rascunho'" class="painel p-7 mt-8">
       <h2 class="text-2xl">Montando o squad</h2>
-      <p class="text-sussurro mt-2 text-sm">
+      <p class="text-fumaca mt-2 text-sm">
         {{ membros.length }} de 6 pessoas. O card abre com 3.
       </p>
 
@@ -163,10 +163,10 @@ function jaConfirmei(f: any) {
 
         <div v-if="dados.convites?.length">
           <p class="rotulo mb-2">Convites em aberto</p>
-          <ul class="text-sm text-sussurro space-y-1">
+          <ul class="text-sm text-fumaca space-y-1">
             <li v-for="c in dados.convites" :key="c.id">
               {{ c.email }} —
-              <span class="text-texto">{{ c.status === 'pendente' ? 'aguardando a pessoa aceitar' : 'aguardando o squad aprovar' }}</span>
+              <span class="text-tinta">{{ c.status === 'pendente' ? 'aguardando a pessoa aceitar' : 'aguardando o squad aprovar' }}</span>
             </li>
           </ul>
         </div>
@@ -175,7 +175,7 @@ function jaConfirmei(f: any) {
           {{ membros.length < 3 ? `Faltam ${3 - membros.length} para começar` : "Começar o ciclo" }}
         </button>
       </div>
-      <p v-else class="text-sussurro text-sm mt-4">
+      <p v-else class="text-fumaca text-sm mt-4">
         Aguardando quem criou o squad abrir o ciclo.
       </p>
     </section>
@@ -188,11 +188,11 @@ function jaConfirmei(f: any) {
         :selo="squad.selo_dourado" :semanal="semanal" :pontos="squad.pontos_total"
       />
 
-      <nav class="flex gap-1 mt-8 border-b border-borda overflow-x-auto">
+      <nav class="flex gap-1 mt-8 border-b border-tinta overflow-x-auto">
         <button
           v-for="t in (semanal ? ['hoje','galeria','squad'] : ['hoje','historico','squad'])" :key="t"
           class="px-4 py-3 text-sm border-b-2 -mb-px transition whitespace-nowrap"
-          :class="aba === t ? 'border-ouro text-ouro' : 'border-transparent text-sussurro hover:text-texto'"
+          :class="aba === t ? 'border-ouro text-laranja' : 'border-transparent text-fumaca hover:text-tinta'"
           @click="aba = t as any"
         >
           {{ { hoje: semanal ? 'Esta semana' : 'Hoje', historico: 'Artigos', galeria: 'Galeria', squad: 'O squad' }[t] }}
@@ -201,7 +201,7 @@ function jaConfirmei(f: any) {
 
       <!-- HOJE -->
       <section v-if="aba === 'hoje'" class="mt-8 space-y-6">
-        <div v-if="!periodoAtual" class="painel p-8 text-center text-sussurro">
+        <div v-if="!periodoAtual" class="painel p-8 text-center text-fumaca">
           Nenhum período em aberto hoje.
         </div>
 
@@ -212,7 +212,7 @@ function jaConfirmei(f: any) {
               <p class="rotulo">Dia {{ periodoAtual.indice }} de {{ squad.total_periodos }} · {{ dataBR(periodoAtual.data_inicio) }}</p>
               <p class="text-sm">
                 Na escala hoje:
-                <span class="text-ouro">{{ minhaVez ? 'você' : periodoAtual.profiles?.nome }}</span>
+                <span class="text-laranja">{{ minhaVez ? 'você' : periodoAtual.profiles?.nome }}</span>
               </p>
             </div>
 
@@ -234,7 +234,7 @@ function jaConfirmei(f: any) {
                   <label for="c">Suas considerações</label>
                   <textarea id="c" v-model="conteudo" rows="9" required
                     placeholder="Escreva o que você leu, o que Deus falou e o que fica para o squad hoje." />
-                  <p class="text-xs mt-1.5" :class="faltam ? 'text-sussurro' : 'text-esmeralda'">
+                  <p class="text-xs mt-1.5" :class="faltam ? 'text-fumaca' : 'text-verde'">
                     <span class="font-mono">{{ conteudo.trim().length }}</span> caracteres ·
                     {{ faltam ? `faltam ${faltam} para o mínimo` : 'mínimo atingido' }}
                   </p>
@@ -247,7 +247,7 @@ function jaConfirmei(f: any) {
               <div v-else class="text-center py-8">
                 <EmojiCristao codigo="oracao" :tamanho="44" class="mx-auto opacity-70" />
                 <h2 class="text-xl mt-4">Esperando o artigo de {{ periodoAtual.profiles?.nome }}</h2>
-                <p class="text-sussurro text-sm mt-2">
+                <p class="text-fumaca text-sm mt-2">
                   Quando ele publicar, entre e reaja para fechar o dia.
                 </p>
               </div>
@@ -259,7 +259,7 @@ function jaConfirmei(f: any) {
               <p class="rotulo mt-2">
                 {{ postAtual.profiles?.nome }}<template v-if="postAtual.referencia"> · {{ postAtual.referencia }}</template>
               </p>
-              <p class="mt-5 leading-relaxed whitespace-pre-line text-texto/90">{{ postAtual.conteudo }}</p>
+              <p class="mt-5 leading-relaxed whitespace-pre-line text-tinta">{{ postAtual.conteudo }}</p>
 
               <div class="chumbo mt-7 pt-6">
                 <BarraReacoes
@@ -267,9 +267,9 @@ function jaConfirmei(f: any) {
                   :meu-id="perfil?.id ?? ''" :sou-autor="postAtual.autor_id === perfil?.id"
                   @reagir="reagir"
                 />
-                <p class="text-xs text-sussurro mt-4">
+                <p class="text-xs text-fumaca mt-4">
                   Faltam
-                  <span class="font-mono text-texto">
+                  <span class="font-mono text-tinta">
                     {{ Math.max(0, membros.length - 1 - (postAtual.post_reactions?.length ?? 0)) }}
                   </span>
                   reações para o dia contar.
@@ -289,7 +289,7 @@ function jaConfirmei(f: any) {
 
             <form v-if="!minhaFoto" class="mt-6 space-y-4" @submit.prevent="mandarFoto">
               <h2 class="text-2xl">Envie sua foto da semana</h2>
-              <p class="text-sussurro text-sm">
+              <p class="text-fumaca text-sm">
                 Uma foto que comprove sua presença. Depois todos do squad confirmam.
               </p>
               <div>
@@ -306,19 +306,19 @@ function jaConfirmei(f: any) {
               </button>
             </form>
 
-            <p v-else class="mt-6 text-esmeralda text-sm">Sua foto desta semana já foi enviada.</p>
+            <p v-else class="mt-6 text-verde text-sm">Sua foto desta semana já foi enviada.</p>
 
             <div class="chumbo mt-7 pt-6">
               <p class="rotulo mb-4">
                 Fotos desta semana · {{ fotosDaSemana.length }} de {{ membros.length }}
               </p>
               <div class="grid sm:grid-cols-2 gap-4">
-                <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border border-borda overflow-hidden bg-noite/40">
+                <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
                   <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover" />
                   <div class="p-4">
                     <p class="text-sm">{{ f.profiles?.nome }}</p>
-                    <p v-if="f.legenda" class="text-xs text-sussurro mt-1">{{ f.legenda }}</p>
-                    <p class="text-xs text-sussurro mt-2 font-mono">
+                    <p v-if="f.legenda" class="text-xs text-fumaca mt-1">{{ f.legenda }}</p>
+                    <p class="text-xs text-fumaca mt-2 font-mono">
                       {{ f.photo_confirmations?.length ?? 0 }} de {{ membros.length - 1 }} confirmaram
                     </p>
                     <button
@@ -326,7 +326,7 @@ function jaConfirmei(f: any) {
                       class="btn-vidro w-full mt-3 !py-2 text-sm"
                       @click="confirmarFoto(f.id)"
                     >Confirmar presença</button>
-                    <p v-else-if="jaConfirmei(f)" class="text-xs text-esmeralda mt-3">Você confirmou</p>
+                    <p v-else-if="jaConfirmei(f)" class="text-xs text-verde mt-3">Você confirmou</p>
                   </div>
                 </div>
               </div>
@@ -345,23 +345,23 @@ function jaConfirmei(f: any) {
             </div>
           </div>
           <h3 v-if="p.titulo" class="text-xl mt-2">{{ p.titulo }}</h3>
-          <p class="text-sussurro text-sm mt-3 leading-relaxed whitespace-pre-line line-clamp-6">{{ p.conteudo }}</p>
+          <p class="text-fumaca text-sm mt-3 leading-relaxed whitespace-pre-line line-clamp-6">{{ p.conteudo }}</p>
         </article>
-        <p v-if="!dados.posts?.length" class="text-sussurro">Nenhum artigo publicado ainda.</p>
+        <p v-if="!dados.posts?.length" class="text-fumaca">Nenhum artigo publicado ainda.</p>
       </section>
 
       <!-- GALERIA -->
       <section v-if="aba === 'galeria'" class="mt-8">
         <div class="grid sm:grid-cols-3 gap-4">
-          <figure v-for="f in dados.fotos" :key="f.id" class="rounded-xl border border-borda overflow-hidden bg-noite/40">
+          <figure v-for="f in dados.fotos" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
             <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-40 object-cover" />
             <figcaption class="p-3 text-xs">
-              <span class="text-texto">{{ f.profiles?.nome }}</span>
-              <span class="text-sussurro block mt-0.5">{{ dataBR(f.created_at) }}</span>
+              <span class="text-tinta">{{ f.profiles?.nome }}</span>
+              <span class="text-fumaca block mt-0.5">{{ dataBR(f.created_at) }}</span>
             </figcaption>
           </figure>
         </div>
-        <p v-if="!dados.fotos?.length" class="text-sussurro">A galeria está vazia por enquanto.</p>
+        <p v-if="!dados.fotos?.length" class="text-fumaca">A galeria está vazia por enquanto.</p>
       </section>
 
       <!-- O SQUAD -->
@@ -370,10 +370,10 @@ function jaConfirmei(f: any) {
           <p class="rotulo mb-4">Escala de quem escreve</p>
           <ol class="space-y-2">
             <li v-for="(m, i) in membros" :key="m.id" class="flex items-center gap-3 text-sm">
-              <span class="font-mono text-sussurro w-6">{{ i + 1 }}</span>
+              <span class="font-mono text-fumaca w-6">{{ i + 1 }}</span>
               <span class="flex-1">{{ m.profiles.nome }}</span>
               <span v-if="m.papel === 'criador'" class="rotulo">criador</span>
-              <span class="font-mono text-xs text-ouro">{{ Number(m.profiles.pontos_total).toFixed(0) }} pts</span>
+              <span class="font-mono text-xs text-laranja">{{ Number(m.profiles.pontos_total).toFixed(0) }} pts</span>
             </li>
           </ol>
         </div>
@@ -384,17 +384,17 @@ function jaConfirmei(f: any) {
             <input v-model="emailConvite" type="email" required placeholder="e-mail da pessoa" />
             <button class="btn-vidro shrink-0" :disabled="convidando">Convidar</button>
           </form>
-          <p class="text-xs text-sussurro mt-3">
+          <p class="text-xs text-fumaca mt-3">
             A pessoa aceita e depois todos os membros precisam aprovar a entrada.
           </p>
         </div>
 
         <div class="painel p-6">
           <p class="rotulo">Como funciona a pontuação aqui</p>
-          <p class="text-sm text-sussurro mt-3">
-            O ciclo tem <span class="font-mono text-texto">{{ squad.total_periodos }}</span>
+          <p class="text-sm text-fumaca mt-3">
+            O ciclo tem <span class="font-mono text-tinta">{{ squad.total_periodos }}</span>
             {{ semanal ? 'semanas' : 'dias' }}. Cada um cumprido por todos vale
-            <span class="font-mono text-ouro">{{ Number(squad.valor_periodo).toFixed(2) }}</span> pontos.
+            <span class="font-mono text-laranja">{{ Number(squad.valor_periodo).toFixed(2) }}</span> pontos.
             Se uma pessoa falhar, ninguém pontua naquele período e o streak volta a zero —
             mas os pontos já conquistados ficam com vocês.
           </p>

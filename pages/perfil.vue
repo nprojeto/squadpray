@@ -26,10 +26,10 @@ async function salvar() {
     <div class="painel p-7 mt-8 flex items-center justify-between gap-6">
       <div>
         <p class="rotulo">Pontos acumulados</p>
-        <p class="font-mono text-5xl font-extrabold text-ouro mt-1">
+        <p class="font-mono text-5xl font-extrabold text-laranja mt-1">
           {{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}
         </p>
-        <p class="text-xs text-sussurro mt-2">Somando todos os squads em que você está.</p>
+        <p class="text-xs text-fumaca mt-2">Somando todos os squads em que você está.</p>
       </div>
       <EmojiCristao codigo="coroa" :tamanho="56" />
     </div>
@@ -38,13 +38,13 @@ async function salvar() {
       <p class="rotulo mb-4">Meus squads</p>
       <ul class="space-y-2 text-sm">
         <li v-for="s in squads" :key="s.id" class="flex items-center justify-between gap-3">
-          <NuxtLink :to="`/squad/${s.id}`" class="hover:text-ouro">{{ s.nome }}</NuxtLink>
-          <span class="text-sussurro text-xs">
+          <NuxtLink :to="`/squad/${s.id}`" class="hover:text-laranja">{{ s.nome }}</NuxtLink>
+          <span class="text-fumaca text-xs">
             {{ TIPOS_SQUAD[s.tipo].nome }} · <span class="font-mono">{{ s.streak_atual }}</span>
           </span>
         </li>
       </ul>
-      <p v-if="!squads.length" class="text-sussurro text-sm">Você ainda não participa de nenhum squad.</p>
+      <p v-if="!squads.length" class="text-fumaca text-sm">Você ainda não participa de nenhum squad.</p>
     </div>
 
     <form class="painel p-7 mt-6 space-y-4" @submit.prevent="salvar">
@@ -56,7 +56,7 @@ async function salvar() {
         <label for="b">Sobre você</label>
         <textarea id="b" v-model="bio" rows="3" placeholder="Uma linha sobre você" />
       </div>
-      <p class="text-xs text-sussurro">E-mail: {{ perfil?.email }} · Fuso: {{ perfil?.timezone }}</p>
+      <p class="text-xs text-fumaca">E-mail: {{ perfil?.email }} · Fuso: {{ perfil?.timezone }}</p>
       <AvisoErro :mensagem="erro" />
       <AvisoErro :mensagem="aviso" tipo="ok" />
       <div class="flex gap-3">

@@ -2,21 +2,17 @@
 import { dataBR, type Periodo } from "~/lib/api";
 
 const props = defineProps<{
-  periodos: Periodo[];
-  streak: number;
-  recorde: number;
-  selo: boolean;
-  semanal: boolean;
-  pontos: number;
+  periodos: Periodo[]; streak: number; recorde: number;
+  selo: boolean; semanal: boolean; pontos: number;
 }>();
 
 const hoje = new Date().toISOString().slice(0, 10);
 
 function estado(p: Periodo) {
-  if (p.status === "concluido") return "aceso";
-  if (p.status === "falhou") return "apagado";
+  if (p.status === "concluido") return "feito";
+  if (p.status === "falhou") return "perdido";
   if (p.data_inicio <= hoje && hoje <= p.data_fim) return "agora";
-  if (p.data_fim < hoje) return "apagado";
+  if (p.data_fim < hoje) return "perdido";
   return "espera";
 }
 
@@ -24,67 +20,57 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
 </script>
 
 <template>
-  <section class="painel p-6 sm:p-8 relative overflow-hidden">
-    <!-- selo dourado -->
-    <div
-      v-if="selo"
-      class="absolute -right-10 -top-10 w-44 h-44 rounded-full blur-2xl bg-ouro/25 pointer-events-none"
-    />
-
-    <div class="flex items-start justify-between gap-6 relative">
+  <section class="painel p-6 sm:p-8">
+    <div class="flex items-start justify-between gap-6 flex-wrap">
       <div>
-        <p class="rotulo">Streak do squad</p>
-        <div class="flex items-baseline gap-3 mt-2">
-          <span
-            class="font-mono font-extrabold leading-none text-6xl sm:text-7xl tabular-nums"
-            :class="selo ? 'text-ouro' : 'text-texto'"
-          >{{ streak }}</span>
-          <span class="text-sussurro text-lg">{{ semanal ? (streak === 1 ? 'semana' : 'semanas') : (streak === 1 ? 'dia' : 'dias') }}</span>
+        <span class="rotulo">streak do squad</span>
+        <div class="flex items-baseline gap-3 mt-1">
+          <span class="font-display leading-none text-7xl sm:text-8xl">{{ streak }}</span>
+          <span class="font-display text-2xl text-fumaca uppercase">
+            {{ semanal ? (streak === 1 ? 'semana' : 'semanas') : (streak === 1 ? 'dia' : 'dias') }}
+          </span>
         </div>
-        <p class="text-sm text-sussurro mt-2">
-          Recorde: <span class="font-mono text-texto">{{ recorde }}</span>
-          · Pontos: <span class="font-mono text-texto">{{ Number(pontos).toFixed(1) }}</span>
-        </p>
+        <div class="flex flex-wrap gap-2 mt-4">
+          <span class="faixa bg-roxo text-tinta text-sm">recorde {{ recorde }}</span>
+          <span class="faixa bg-verde text-papel text-sm">{{ Number(pontos).toFixed(1) }} pts</span>
+        </div>
       </div>
 
       <div class="text-center shrink-0">
         <div
-          class="w-20 h-20 rounded-2xl grid place-items-center border transition"
-          :class="selo
-            ? 'border-ouro/70 bg-ouro/10 shadow-ouro animate-pulsoOuro'
-            : 'border-borda bg-noite/40'"
+          class="w-24 h-24 grid place-items-center border-2 border-tinta rounded-xl -rotate-3"
+          :class="selo ? 'bg-amarelo shadow-bloco animate-carimbo' : 'bg-papel border-dashed opacity-45'"
         >
-          <EmojiCristao codigo="coroa" :tamanho="40" :class="selo ? '' : 'opacity-20 grayscale'" />
+          <EmojiCristao codigo="coroa" :tamanho="46" />
         </div>
-        <p class="text-[11px] mt-2" :class="selo ? 'text-ouro' : 'text-sussurro'">
-          {{ selo ? 'Selo conquistado' : `Faltam ${faltamPraCoroa}` }}
+        <p class="font-marca text-lg mt-2" :class="selo ? 'text-laranja' : 'text-fumaca'">
+          {{ selo ? 'coroa conquistada!' : `faltam ${faltamPraCoroa} p/ a coroa` }}
         </p>
       </div>
     </div>
 
-    <!-- painéis de vitral -->
     <div class="mt-7 chumbo pt-6">
-      <p class="rotulo mb-3">{{ semanal ? 'Semanas do ciclo' : 'Dias do ciclo' }}</p>
-      <div class="grid gap-1.5" :class="semanal ? 'grid-cols-6 sm:grid-cols-10' : 'grid-cols-7 sm:grid-cols-14'">
+      <span class="rotulo">{{ semanal ? 'semanas do ciclo' : 'dias do ciclo' }}</span>
+      <div class="grid gap-1.5 mt-3" :class="semanal ? 'grid-cols-6 sm:grid-cols-10' : 'grid-cols-7 sm:grid-cols-14'">
         <div
           v-for="p in periodos" :key="p.id"
-          class="group relative aspect-square rounded-md border transition-all duration-300"
+          class="group relative aspect-square rounded-md border-2 border-tinta transition-all"
           :class="{
-            'bg-ouro/85 border-ouro shadow-ouro animate-acender': estado(p) === 'aceso',
-            'bg-rubi/25 border-rubi/50': estado(p) === 'apagado',
-            'bg-lilas/25 border-lilas ring-2 ring-lilas/40': estado(p) === 'agora',
-            'bg-noite/50 border-borda': estado(p) === 'espera',
+            'bg-amarelo shadow-blocoP animate-colar': estado(p) === 'feito',
+            'bg-laranja/25 border-dashed': estado(p) === 'perdido',
+            'bg-roxo shadow-blocoP': estado(p) === 'agora',
+            'bg-papel border-risco': estado(p) === 'espera',
           }"
         >
           <span
-            class="absolute inset-0 grid place-items-center font-mono text-[10px]"
-            :class="estado(p) === 'aceso' ? 'text-noite font-extrabold' : 'text-sussurro/70'"
+            class="absolute inset-0 grid place-items-center font-mono text-[10px] font-bold"
+            :class="estado(p) === 'espera' ? 'text-fumaca' : 'text-tinta'"
           >{{ p.indice }}</span>
 
           <span
             class="pointer-events-none absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden
-                   group-hover:block whitespace-nowrap rounded-lg bg-noite border border-borda
-                   px-2.5 py-1.5 text-[11px] text-texto shadow-vitral"
+                   group-hover:block whitespace-nowrap rounded-md bg-tinta text-papel
+                   px-2.5 py-1.5 text-[11px]"
           >
             {{ dataBR(p.data_inicio) }}<template v-if="semanal"> a {{ dataBR(p.data_fim) }}</template>
             <template v-if="p.profiles?.nome"> · {{ p.profiles.nome }}</template>
@@ -92,11 +78,11 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-[11px] text-sussurro">
-        <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-sm bg-ouro/85 inline-block" /> cumprido</span>
-        <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-sm bg-lilas/40 inline-block" /> em aberto</span>
-        <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-sm bg-rubi/30 inline-block" /> perdido</span>
-        <span class="flex items-center gap-1.5"><i class="w-3 h-3 rounded-sm bg-noite border border-borda inline-block" /> a vir</span>
+      <div class="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-xs font-semibold">
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-amarelo border-2 border-tinta inline-block" /> cumprido</span>
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-roxo border-2 border-tinta inline-block" /> em aberto</span>
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-laranja/25 border-2 border-dashed border-tinta inline-block" /> perdido</span>
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-papel border-2 border-risco inline-block" /> a vir</span>
       </div>
     </div>
   </section>

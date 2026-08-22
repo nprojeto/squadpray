@@ -11,12 +11,12 @@ export default defineNuxtConfig({
     baseURL: process.env.NUXT_APP_BASE_URL || "/",
     buildAssetsDir: "assets",
     head: {
-      title: "Vigília — streaks de fé em squad",
+      title: "SquadPray — streaks de fé em squad",
       htmlAttrs: { lang: "pt-BR" },
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { name: "theme-color", content: "#0B0A1F" },
+        { name: "theme-color", content: "#F4F0E2" },
         {
           name: "description",
           content:
@@ -28,7 +28,7 @@ export default defineNuxtConfig({
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Karla:wght@400;500;700&family=JetBrains+Mono:wght@500;800&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=Caveat:wght@600;700&family=Space+Mono:wght@400;700&display=swap",
         },
       ],
     },

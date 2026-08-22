@@ -1,4 +1,4 @@
-# Vigília
+# SquadPray
 
 Plataforma de streaks de fé em squad: oração, leitura bíblica, devocional, jejum, livros, celebração e GDC.
 

@@ -15,19 +15,19 @@ const encerrados = computed(() => squads.value.filter(s => s.status === 'conclui
       </div>
       <div class="text-right">
         <p class="rotulo">Pontos acumulados</p>
-        <p class="font-mono text-4xl font-extrabold text-ouro">
+        <p class="font-mono text-4xl font-extrabold text-laranja">
           {{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}
         </p>
       </div>
     </div>
 
-    <p v-if="carregando" class="text-sussurro mt-10">Carregando…</p>
+    <p v-if="carregando" class="text-fumaca mt-10">Carregando…</p>
 
     <template v-else>
       <div v-if="!squads.length" class="painel p-10 mt-10 text-center">
         <EmojiCristao codigo="semente" :tamanho="48" class="mx-auto" />
         <h2 class="text-2xl mt-4">Nenhum squad ainda</h2>
-        <p class="text-sussurro mt-2 max-w-md mx-auto">
+        <p class="text-fumaca mt-2 max-w-md mx-auto">
           Crie o seu e convide pelo menos mais duas pessoas, ou espere um convite chegar.
         </p>
         <div class="flex flex-wrap gap-3 justify-center mt-7">
@@ -49,9 +49,9 @@ const encerrados = computed(() => squads.value.filter(s => s.status === 'conclui
         </div>
 
         <div class="chumbo mt-10 pt-6 flex flex-wrap items-center justify-between gap-4">
-          <p class="text-sm text-sussurro">
+          <p class="text-sm text-fumaca">
             <template v-if="meuSquadCriado">
-              Você já criou o squad <span class="text-texto">{{ meuSquadCriado.nome }}</span>.
+              Você já criou o squad <span class="text-tinta">{{ meuSquadCriado.nome }}</span>.
               Cada pessoa pode criar apenas um, mas pode participar de outros.
             </template>
             <template v-else>Você ainda não criou nenhum squad.</template>

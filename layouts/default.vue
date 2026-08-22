@@ -6,32 +6,32 @@ onMounted(carregar);
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <header class="sticky top-0 z-40 border-b border-borda/60 bg-noite/80 backdrop-blur-md">
+    <header class="sticky top-0 z-40 border-b-2 border-tinta bg-papel/95 backdrop-blur">
       <div class="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
-        <NuxtLink :to="logado ? '/painel' : '/'" class="flex items-center gap-2.5">
-          <EmojiCristao codigo="luz" :tamanho="26" />
-          <span class="font-display text-xl tracking-tight">Vigília</span>
+        <NuxtLink :to="logado ? '/painel' : '/'" class="flex items-center gap-2">
+          <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
+            <EmojiCristao codigo="oracao" :tamanho="22" />
+          </span>
+          <span class="font-display text-2xl uppercase tracking-tight">SquadPray</span>
         </NuxtLink>
 
         <nav v-if="logado" class="hidden sm:flex items-center gap-1 text-sm">
-          <NuxtLink to="/painel" class="btn-fantasma !px-3 !py-2">Meus squads</NuxtLink>
-          <NuxtLink to="/convites" class="btn-fantasma !px-3 !py-2 relative">
+          <NuxtLink to="/painel" class="btn-fantasma">Meus squads</NuxtLink>
+          <NuxtLink to="/convites" class="btn-fantasma relative">
             Convites
-            <span v-if="naoLidas" class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-ouro" />
+            <span v-if="naoLidas" class="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-laranja border border-tinta" />
           </NuxtLink>
-          <NuxtLink to="/perfil" class="btn-fantasma !px-3 !py-2">
+          <NuxtLink to="/perfil" class="btn-fantasma">
             {{ perfil?.nome?.split(' ')[0] }}
-            <span class="font-mono text-ouro ml-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
+            <span class="font-mono font-bold ml-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
           </NuxtLink>
-          <button class="btn-fantasma !px-3 !py-2" @click="sair">Sair</button>
+          <button class="btn-fantasma" @click="sair">Sair</button>
         </nav>
 
-        <button v-if="logado" class="sm:hidden btn-fantasma !px-3 !py-2" @click="menuAberto = !menuAberto">
-          Menu
-        </button>
+        <button v-if="logado" class="sm:hidden btn-fantasma" @click="menuAberto = !menuAberto">Menu</button>
       </div>
 
-      <div v-if="menuAberto && logado" class="sm:hidden border-t border-borda/60 px-5 py-3 flex flex-col gap-1">
+      <div v-if="menuAberto && logado" class="sm:hidden border-t-2 border-tinta px-5 py-3 flex flex-col gap-1">
         <NuxtLink to="/painel" class="btn-fantasma justify-start" @click="menuAberto = false">Meus squads</NuxtLink>
         <NuxtLink to="/convites" class="btn-fantasma justify-start" @click="menuAberto = false">Convites</NuxtLink>
         <NuxtLink to="/perfil" class="btn-fantasma justify-start" @click="menuAberto = false">Meu perfil</NuxtLink>
@@ -43,8 +43,10 @@ onMounted(carregar);
       <slot />
     </main>
 
-    <footer class="border-t border-borda/60 py-6 text-center text-xs text-sussurro">
-      Vigília · o streak só conta quando todos cumprem
+    <footer class="border-t-2 border-tinta py-6 text-center">
+      <p class="font-marca text-xl text-laranja -rotate-1 inline-block">
+        o streak só conta quando todo mundo cumpre
+      </p>
     </footer>
   </div>
 </template>

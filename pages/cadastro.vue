@@ -20,15 +20,15 @@ async function cadastrar() {
 
 <template>
   <div class="max-w-md mx-auto">
-    <NuxtLink to="/" class="rotulo hover:text-texto">← voltar</NuxtLink>
+    <NuxtLink to="/" class="rotulo hover:text-tinta">← voltar</NuxtLink>
     <h1 class="text-4xl mt-4">Criar minha conta</h1>
-    <p class="text-sussurro mt-2">Leva menos de um minuto.</p>
+    <p class="text-fumaca mt-2">Leva menos de um minuto.</p>
 
     <div v-if="pronto" class="painel p-7 mt-8 text-center">
       <EmojiCristao codigo="pomba" :tamanho="44" class="mx-auto" />
       <h2 class="text-2xl mt-4">Confirme seu e-mail</h2>
-      <p class="text-sussurro mt-2 text-sm">
-        Enviamos um link para <span class="text-texto">{{ email }}</span>.
+      <p class="text-fumaca mt-2 text-sm">
+        Enviamos um link para <span class="text-tinta">{{ email }}</span>.
         Abra o e-mail, clique no link e volte para entrar.
       </p>
       <NuxtLink to="/" class="btn-vidro mt-6">Ir para o login</NuxtLink>
