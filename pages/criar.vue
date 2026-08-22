@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api, TIPOS_SQUAD, ehSemanal, precisaObjetivo, proximaSegunda, hojeISO, dataBR, type TipoSquad } from "~/lib/api";
+import { api, TIPOS_SQUAD, ICONE_TIPO, ehSemanal, precisaObjetivo, proximaSegunda, hojeISO, dataBR, type TipoSquad } from "~/lib/api";
 
 const { carregar, meuSquadCriado } = useSessao();
 
@@ -97,7 +97,8 @@ async function criar() {
             :class="tipo === k ? 'border-ouro bg-amarelo' : 'border-tinta bg-papel hover:border-laranja'"
             @click="tipo = k as TipoSquad"
           >
-            <span class="block text-sm">{{ t.nome }}</span>
+            <EmojiCristao :codigo="ICONE_TIPO[k as TipoSquad]" :tamanho="34" />
+            <span class="block text-sm font-bold mt-1.5">{{ t.nome }}</span>
             <span class="block text-[10px] uppercase tracking-wider text-fumaca mt-0.5 font-mono">{{ t.frequencia }}</span>
           </button>
         </div>

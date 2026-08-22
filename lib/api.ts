@@ -83,6 +83,16 @@ export const TIPOS_SQUAD: Record<TipoSquad, { nome: string; frequencia: string; 
   gdc:             { nome: "GDC",             frequencia: "semanal", verbo: "enviar a foto do GDC" },
 };
 
+export const ICONE_TIPO: Record<TipoSquad, string> = {
+  leitura_biblica: "biblia",
+  livros: "rolo",
+  devocional: "vela",
+  oracao: "terco",
+  jejum: "pao",
+  celebracao: "sinos",
+  gdc: "peixes",
+};
+
 export const ehSemanal = (t: TipoSquad) => t === "celebracao" || t === "gdc";
 export const precisaObjetivo = (t: TipoSquad) => t === "oracao" || t === "jejum";
 

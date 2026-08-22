@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TIPOS_SQUAD, dataBR, ehSemanal, type Squad } from "~/lib/api";
+import { TIPOS_SQUAD, ICONE_TIPO, dataBR, ehSemanal, type Squad } from "~/lib/api";
 const props = defineProps<{ squad: Squad }>();
 
 const cores: Record<string, string> = {
@@ -16,8 +16,11 @@ const cor = computed(() => cores[props.squad.tipo] ?? "bg-amarelo");
     class="painel p-5 block transition hover:-translate-y-1 hover:shadow-[7px_7px_0_#151310]"
   >
     <div class="flex items-start justify-between gap-3">
-      <span class="faixa text-sm -rotate-1" :class="cor">{{ TIPOS_SQUAD[squad.tipo].nome }}</span>
-      <EmojiCristao v-if="squad.selo_dourado" codigo="coroa" :tamanho="28" />
+      <span class="flex items-center gap-2">
+        <EmojiCristao :codigo="ICONE_TIPO[squad.tipo]" :tamanho="34" />
+        <span class="faixa text-sm -rotate-1" :class="cor">{{ TIPOS_SQUAD[squad.tipo].nome }}</span>
+      </span>
+      <EmojiCristao v-if="squad.selo_dourado" codigo="coroa" :tamanho="30" />
     </div>
 
     <h3 class="text-2xl mt-4 break-words">{{ squad.nome }}</h3>

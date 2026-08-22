@@ -44,13 +44,13 @@ onMounted(() => {
 onUnmounted(() => clearInterval(timer));
 
 const tipos = [
-  { nome: "Oração", cor: "bg-amarelo", ritmo: "diário" },
-  { nome: "Leitura Bíblica", cor: "bg-roxo", ritmo: "diário" },
-  { nome: "Devocional", cor: "bg-laranja text-papel", ritmo: "diário" },
-  { nome: "Jejum", cor: "bg-rosa text-papel", ritmo: "diário" },
-  { nome: "Livros", cor: "bg-verde text-papel", ritmo: "diário" },
-  { nome: "Celebração", cor: "bg-amarelo", ritmo: "semanal" },
-  { nome: "GDC", cor: "bg-roxo", ritmo: "semanal" },
+  { nome: "Oração", icone: "terco", cor: "bg-amarelo", ritmo: "diário" },
+  { nome: "Leitura Bíblica", icone: "biblia", cor: "bg-roxo", ritmo: "diário" },
+  { nome: "Devocional", icone: "vela", cor: "bg-laranja text-papel", ritmo: "diário" },
+  { nome: "Jejum", icone: "pao", cor: "bg-rosa text-papel", ritmo: "diário" },
+  { nome: "Livros", icone: "rolo", cor: "bg-verde text-papel", ritmo: "diário" },
+  { nome: "Celebração", icone: "sinos", cor: "bg-amarelo", ritmo: "semanal" },
+  { nome: "GDC", icone: "peixes", cor: "bg-roxo", ritmo: "semanal" },
 ];
 </script>
 
@@ -95,7 +95,10 @@ const tipos = [
             class="flex items-center justify-between border-2 border-tinta px-4 py-2.5 shadow-blocoP"
             :class="[t.cor, i % 2 ? 'rotate-[.4deg]' : '-rotate-[.5deg]']"
           >
-            <span class="font-display text-2xl uppercase">{{ t.nome }}</span>
+            <span class="flex items-center gap-3">
+              <EmojiCristao :codigo="t.icone" :tamanho="32" />
+              <span class="font-display text-2xl uppercase">{{ t.nome }}</span>
+            </span>
             <span class="font-bold text-xs uppercase tracking-widest">{{ t.ritmo }}</span>
           </div>
         </div>

@@ -18,7 +18,7 @@ const recado = computed(() => {
   if (p === "/rede") return "ninguém caminha sozinho por aqui";
   if (p === "/convites") return "todo squad começa com um convite";
   if (p === "/historico") return "o que vocês construíram fica guardado";
-  if (p === "/perfil") return "sua caminhada, do seu jeito";
+  if (p === "/perfil") return "sua caminhada guiada por Jesus";
   if (p === "/notificacoes") return "nada passa despercebido";
   if (p === "/criar") return "junte três e comece";
   if (p.startsWith("/prayer/")) return "gente de fé se encontra";
@@ -55,9 +55,7 @@ const links = computed(() => [
         </button>
 
         <NuxtLink :to="logado ? '/painel' : '/'" class="flex items-center gap-2 shrink-0">
-          <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
-            <EmojiCristao codigo="oracao" :tamanho="22" />
-          </span>
+          <EmojiCristao codigo="terco" :tamanho="38" />
           <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">EleveSquad</span>
         </NuxtLink>
 
