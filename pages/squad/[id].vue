@@ -91,6 +91,34 @@ async function convidar() {
   finally { convidando.value = false; }
 }
 
+async function cancelarConvite(cid: string) {
+  erro.value = null;
+  try { await api.cancelarConvite(id, cid); aviso.value = "Convite cancelado."; await buscar(); }
+  catch (e: any) { erro.value = e.message; }
+}
+
+const confirmandoEncerrar = ref(false);
+async function encerrar() {
+  erro.value = null;
+  try {
+    await api.encerrarSquad(id);
+    aviso.value = "Squad encerrado. Os pontos deste ciclo não entraram na carteira.";
+    confirmandoEncerrar.value = false;
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
+}
+
+async function finalizar() {
+  erro.value = null;
+  try {
+    const r: any = await api.finalizarSquad(id);
+    aviso.value = r.erro ? r.erro : `Ciclo fechado. ${Number(r.pontos ?? 0).toFixed(1)} pontos foram para a carteira de cada um.`;
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
+}
+
+const cicloTerminou = computed(() => !!squad.value && hojeISO() > squad.value.data_fim);
+
 async function ativar() {
   erro.value = null;
   try { await api.ativarSquad(id); aviso.value = "O ciclo começou."; await buscar(); }
@@ -163,10 +191,18 @@ function jaConfirmei(f: any) {
 
         <div v-if="dados.convites?.length">
           <p class="rotulo mb-2">Convites em aberto</p>
-          <ul class="text-sm text-fumaca space-y-1">
-            <li v-for="c in dados.convites" :key="c.id">
-              {{ c.email }} —
-              <span class="text-tinta">{{ c.status === 'pendente' ? 'aguardando a pessoa aceitar' : 'aguardando o squad aprovar' }}</span>
+          <ul class="space-y-2">
+            <li v-for="c in dados.convites" :key="c.id"
+                class="flex items-center justify-between gap-3 border-2 border-dashed border-risco rounded-lg px-3 py-2">
+              <span class="text-sm font-semibold break-all">
+                {{ c.email }}
+                <span class="block text-xs text-fumaca font-normal">
+                  {{ c.status === 'pendente' ? 'aguardando a pessoa aceitar' : 'aguardando o squad aprovar' }}
+                </span>
+              </span>
+              <button class="btn-fantasma !px-3 !py-1.5 text-xs shrink-0" @click="cancelarConvite(c.id)">
+                Cancelar
+              </button>
             </li>
           </ul>
         </div>
@@ -396,8 +432,27 @@ function jaConfirmei(f: any) {
             {{ semanal ? 'semanas' : 'dias' }}. Cada um cumprido por todos vale
             <span class="font-mono text-laranja">{{ Number(squad.valor_periodo).toFixed(2) }}</span> pontos.
             Se uma pessoa falhar, ninguém pontua naquele período e o streak volta a zero —
-            mas os pontos já conquistados ficam com vocês.
+            Os pontos entram na carteira de cada um só quando o ciclo chegar ao fim.
           </p>
+
+          <div v-if="cicloTerminou && !squad.pontos_creditados && squad.status === 'ativo'" class="mt-5">
+            <button class="btn-ouro w-full" @click="finalizar">Fechar ciclo e receber os pontos</button>
+          </div>
+        </div>
+
+        <div v-if="souCriador && ['rascunho','ativo'].includes(squad.status)" class="painel p-6 border-laranja">
+          <span class="rotulo">encerrar este squad</span>
+          <p class="text-sm font-semibold mt-3">
+            Encerrar antes do fim cancela o ciclo. O histórico fica guardado, mas
+            <span class="bg-amarelo px-1">nenhum ponto entra na carteira</span>.
+          </p>
+          <button v-if="!confirmandoEncerrar" class="btn-vidro mt-4" @click="confirmandoEncerrar = true">
+            Encerrar squad
+          </button>
+          <div v-else class="flex flex-wrap gap-3 mt-4">
+            <button class="btn-ouro !bg-laranja !text-papel" @click="encerrar">Sim, encerrar sem pontos</button>
+            <button class="btn-fantasma" @click="confirmandoEncerrar = false">Voltar</button>
+          </div>
         </div>
       </section>
     </template>

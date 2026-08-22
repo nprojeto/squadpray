@@ -160,8 +160,9 @@ Deno.serve(async (req) => {
 
         let inicio = data_inicio;
         if (SEMANAIS.includes(tipo)) inicio = proximaSegunda(new Date(data_inicio + "T12:00:00Z"));
-        if (new Date(data_fim) < new Date(inicio)) {
-          return erro("A data de término precisa ser depois do início.");
+        const dias = Math.floor((+new Date(data_fim) - +new Date(inicio)) / 86400000) + 1;
+        if (dias < 21) {
+          return erro("O ciclo precisa ter no mínimo 21 dias corridos.");
         }
 
         const { data, error } = await db.from("squads").insert({
@@ -329,6 +330,35 @@ Deno.serve(async (req) => {
         });
       }
 
+      // DELETE /squads/:id/convites/:conviteId  -> cancelar convite
+      if (seg[2] === "convites" && seg[3] && metodo === "DELETE") {
+        const { data: squad } = await db.from("squads").select("criado_por").eq("id", squadId).single();
+        if (squad.criado_por !== user.id) return erro("Só quem criou o squad pode cancelar convites.", 403);
+        await db.from("squad_invites").delete().eq("id", seg[3]).eq("squad_id", squadId);
+        return ok({ sucesso: true });
+      }
+
+      // POST /squads/:id/encerrar -> encerra sem creditar pontos
+      if (seg[2] === "encerrar" && metodo === "POST") {
+        const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
+        if (squad.criado_por !== user.id) return erro("Só quem criou o squad pode encerrar.", 403);
+        if (!["rascunho", "ativo"].includes(squad.status)) return erro("Este squad já está encerrado.");
+        const { error } = await db.rpc("encerrar_squad", { p_squad: squadId });
+        if (error) return erro(error.message);
+        const { data: membros } = await db.from("squad_members")
+          .select("user_id").eq("squad_id", squadId).eq("status", "ativo");
+        await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
+          "Squad encerrado", `O ciclo de ${squad.nome} foi encerrado antes do fim. Os pontos não entraram na carteira.`);
+        return ok({ encerrado: true });
+      }
+
+      // POST /squads/:id/finalizar -> credita os pontos do ciclo concluído
+      if (seg[2] === "finalizar" && metodo === "POST") {
+        const { data, error } = await db.rpc("finalizar_squad", { p_squad: squadId });
+        if (error) return erro(error.message);
+        return ok(data);
+      }
+
       // DELETE /squads/:id/sair
       if (seg[2] === "sair" && metodo === "DELETE") {
         const { data: squad } = await db.from("squads").select("criado_por").eq("id", squadId).single();
@@ -455,6 +485,23 @@ Deno.serve(async (req) => {
         }
         return ok({ status: final?.status });
       }
+    }
+
+    // ============ HISTÓRICO ============
+    if (seg[0] === "historico" && metodo === "GET") {
+      const { data: ids } = await db.from("squad_members")
+        .select("squad_id").eq("user_id", user.id).eq("status", "ativo");
+      const lista = ids?.map((m: any) => m.squad_id) ?? [];
+      if (!lista.length) return ok({ squads: [], total: 0 });
+
+      const { data: squads } = await db.from("v_historico").select("*").in("id", lista);
+      const { data: extrato } = await db.from("points_ledger")
+        .select("*, squads(nome, tipo)")
+        .eq("user_id", user.id).is("period_id", null)
+        .order("created_at", { ascending: false });
+
+      const total = (extrato ?? []).reduce((a: number, l: any) => a + Number(l.pontos), 0);
+      return ok({ squads: squads ?? [], extrato: extrato ?? [], total });
     }
 
     // ============ NOTIFICAÇÕES ============

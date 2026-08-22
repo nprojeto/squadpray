@@ -133,6 +133,11 @@ export const api = {
   calendario: (id: string) => chamar(`/squads/${id}/calendario`),
   galeria: (id: string) => chamar(`/squads/${id}/galeria`),
   sairDoSquad: (id: string) => chamar(`/squads/${id}/sair`, { metodo: "DELETE" }),
+  cancelarConvite: (squadId: string, conviteId: string) =>
+    chamar(`/squads/${squadId}/convites/${conviteId}`, { metodo: "DELETE" }),
+  encerrarSquad: (id: string) => chamar(`/squads/${id}/encerrar`, { metodo: "POST" }),
+  finalizarSquad: (id: string) => chamar(`/squads/${id}/finalizar`, { metodo: "POST" }),
+  historico: () => chamar("/historico"),
 
   publicarArtigo: (squadId: string, dados: {
     period_id: string; titulo?: string; referencia?: string; conteudo: string;

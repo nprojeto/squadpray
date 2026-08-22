@@ -23,13 +23,20 @@ const totalPeriodos = computed(() => {
 });
 const valorPeriodo = computed(() => (totalPeriodos.value ? 100 / totalPeriodos.value : 0));
 
+const minimoFim = computed(() => {
+  const d = new Date(inicioReal.value + "T12:00:00");
+  d.setDate(d.getDate() + 20);
+  return d.toISOString().slice(0, 10);
+});
+
 watch(tipo, () => { if (semanal.value) inicio.value = proximaSegunda(); });
 
 async function criar() {
   erro.value = null;
   if (!nome.value.trim()) { erro.value = "Dê um nome ao squad."; return; }
   if (!fim.value) { erro.value = "Escolha a data de término."; return; }
-  if (totalPeriodos.value < 1) { erro.value = semanal.value ? "O ciclo precisa ter pelo menos uma semana completa." : "A data de término precisa ser depois do início."; return; }
+  const dias = Math.floor((+new Date(fim.value) - +new Date(inicioReal.value)) / 86400000) + 1;
+  if (dias < 21) { erro.value = `O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`; return; }
   if (precisaObjetivo(tipo.value) && objetivo.value.trim().length < 10) {
     erro.value = "Descreva o objetivo deste squad com pelo menos 10 caracteres."; return;
   }
@@ -106,7 +113,7 @@ async function criar() {
         </div>
         <div>
           <label for="f">Termina em</label>
-          <input id="f" v-model="fim" type="date" required :min="inicioReal" />
+          <input id="f" v-model="fim" type="date" required :min="minimoFim" />
         </div>
       </div>
 
@@ -117,7 +124,7 @@ async function criar() {
           {{ semanal ? 'semanas' : 'dias' }} no ciclo · cada
           {{ semanal ? 'semana cumprida' : 'dia cumprido' }} por todos vale
           <span class="font-mono text-laranja">{{ valorPeriodo.toFixed(2) }}</span> pontos.
-          O ciclo inteiro soma 100.
+          O ciclo inteiro soma 100 — e os pontos entram na carteira só quando ele terminar.
         </p>
       </div>
 
@@ -126,8 +133,8 @@ async function criar() {
       <button class="btn-ouro w-full" :disabled="salvando">
         {{ salvando ? "Criando…" : "Criar squad e convidar pessoas" }}
       </button>
-      <p class="text-xs text-fumaca text-center">
-        O card só abre depois que pelo menos 3 pessoas estiverem dentro.
+      <p class="text-xs text-fumaca text-center font-semibold">
+        Mínimo de 21 dias corridos. O card só abre com pelo menos 3 pessoas dentro.
       </p>
     </form>
   </div>

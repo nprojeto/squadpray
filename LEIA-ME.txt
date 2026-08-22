@@ -1,9 +1,4 @@
 SQUADPRAY — código-fonte
 =========================
-
-O GitHub compila e publica sozinho a cada alteração.
 As chaves do Supabase já estão em public/config.json.
-Nada aqui precisa ser editado.
-
-O arquivo deploy.yml.txt NÃO é para ser arrastado —
-ele já foi criado dentro do GitHub em .github/workflows/deploy.yml.
+Nada aqui precisa ser editado. Suba tudo para o repositório squadpray.

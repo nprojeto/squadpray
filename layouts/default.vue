@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const { perfil, naoLidas, carregar, sair, logado } = useSessao();
+const { escuro, alternar, iniciar } = useTema();
 const menuAberto = ref(false);
-onMounted(carregar);
+onMounted(() => { iniciar(); carregar(); });
 </script>
 
 <template>
@@ -25,15 +26,23 @@ onMounted(carregar);
             {{ perfil?.nome?.split(' ')[0] }}
             <span class="font-mono font-bold ml-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(0) }}</span>
           </NuxtLink>
+          <NuxtLink to="/historico" class="btn-fantasma">Histórico</NuxtLink>
           <button class="btn-fantasma" @click="sair">Sair</button>
         </nav>
 
-        <button v-if="logado" class="sm:hidden btn-fantasma" @click="menuAberto = !menuAberto">Menu</button>
+        <div class="flex items-center gap-1">
+          <button
+            class="btn-fantasma !px-3" :aria-label="escuro ? 'Usar tema claro' : 'Usar tema escuro'"
+            @click="alternar"
+          >{{ escuro ? "☀" : "☾" }}</button>
+          <button v-if="logado" class="sm:hidden btn-fantasma" @click="menuAberto = !menuAberto">Menu</button>
+        </div>
       </div>
 
       <div v-if="menuAberto && logado" class="sm:hidden border-t-2 border-tinta px-5 py-3 flex flex-col gap-1">
         <NuxtLink to="/painel" class="btn-fantasma justify-start" @click="menuAberto = false">Meus squads</NuxtLink>
         <NuxtLink to="/convites" class="btn-fantasma justify-start" @click="menuAberto = false">Convites</NuxtLink>
+        <NuxtLink to="/historico" class="btn-fantasma justify-start" @click="menuAberto = false">Histórico</NuxtLink>
         <NuxtLink to="/perfil" class="btn-fantasma justify-start" @click="menuAberto = false">Meu perfil</NuxtLink>
         <button class="btn-fantasma justify-start" @click="sair">Sair</button>
       </div>

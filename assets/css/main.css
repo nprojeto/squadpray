@@ -3,18 +3,37 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --tinta: 21 19 16;
+    --papel: 244 240 226;
+    --cartao: 251 248 238;
+    --risco: 220 212 190;
+    --fumaca: 124 115 100;
+    --grao: 21 19 16;
+  }
+  html.escuro {
+    --tinta: 243 239 227;
+    --papel: 18 17 15;
+    --cartao: 32 30 27;
+    --risco: 66 62 55;
+    --fumaca: 158 150 136;
+    --grao: 255 255 255;
+  }
   html {
-    background-color: #f4f0e2;
+    background-color: rgb(var(--papel));
     background-image:
-      radial-gradient(rgba(21, 19, 16, .045) 1px, transparent 1px),
-      radial-gradient(rgba(21, 19, 16, .03) 1px, transparent 1px);
+      radial-gradient(rgb(var(--grao) / .05) 1px, transparent 1px),
+      radial-gradient(rgb(var(--grao) / .03) 1px, transparent 1px);
     background-size: 3px 3px, 7px 7px;
     background-position: 0 0, 2px 3px;
+    color-scheme: light;
   }
+  html.escuro { color-scheme: dark; }
   body { @apply font-corpo text-tinta antialiased min-h-screen; }
 
   h1, h2, h3 { @apply font-display uppercase tracking-tight leading-[.95]; }
   ::selection { background: #f5ce16; color: #151310; }
+  img { @apply border-2 border-tinta; }
 
   *:focus-visible {
     outline: 3px solid #f04e23;

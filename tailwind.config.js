@@ -9,16 +9,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        tinta: "#151310",
-        papel: "#F4F0E2",
-        cartao: "#FBF8EE",
-        risco: "#DCD4BE",
+        tinta: "rgb(var(--tinta) / <alpha-value>)",
+        papel: "rgb(var(--papel) / <alpha-value>)",
+        cartao: "rgb(var(--cartao) / <alpha-value>)",
+        risco: "rgb(var(--risco) / <alpha-value>)",
         laranja: "#F04E23",
         amarelo: "#F5CE16",
         roxo: "#B07BE8",
         verde: "#1D6B62",
         rosa: "#EE3D8F",
-        fumaca: "#7C7364",
+        fumaca: "rgb(var(--fumaca) / <alpha-value>)",
       },
       fontFamily: {
         display: ['"Anton"', "Impact", "sans-serif"],
@@ -31,8 +31,8 @@ export default {
         35: ".35", 45: ".45", 55: ".55", 65: ".65", 85: ".85",
       },
       boxShadow: {
-        bloco: "5px 5px 0 #151310",
-        blocoP: "3px 3px 0 #151310",
+        bloco: "5px 5px 0 rgb(var(--tinta))",
+        blocoP: "3px 3px 0 rgb(var(--tinta))",
         adesivo: "0 6px 14px -6px rgba(21,19,16,.45)",
       },
       keyframes: {
