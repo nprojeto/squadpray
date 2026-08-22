@@ -137,10 +137,11 @@ Deno.serve(async (req) => {
         let paraAprovar = 0;
         if (meusIds.length) {
           const { data: pend } = await db.from("squad_invites")
-            .select("id, user_id, invite_approvals(user_id)")
+            .select("id, user_id, convidado_por, invite_approvals(user_id)")
             .in("squad_id", meusIds).eq("status", "aceito");
           paraAprovar = (pend ?? []).filter((c: any) =>
-            c.user_id !== user.id && !c.invite_approvals?.some((a: any) => a.user_id === user.id)).length;
+            c.user_id !== user.id && c.convidado_por !== user.id &&
+            !c.invite_approvals?.some((a: any) => a.user_id === user.id)).length;
         }
 
         return ok({
@@ -461,7 +462,7 @@ Deno.serve(async (req) => {
             .select("*, squads(id, nome, tipo), invite_approvals(user_id, aprovado)")
             .in("squad_id", ids).eq("status", "aceito");
           paraAprovar = (data ?? []).filter(
-            (c: any) => c.user_id !== user.id &&
+            (c: any) => c.user_id !== user.id && c.convidado_por !== user.id &&
               !c.invite_approvals?.some((a: any) => a.user_id === user.id),
           );
         }

@@ -65,8 +65,8 @@ async function aprovar(id: string, ok: boolean) {
         <div v-for="c in paraAprovar" :key="c.id" class="painel p-6 mb-3">
           <p class="rotulo">{{ c.squads?.nome }}</p>
           <h2 class="text-xl mt-1">{{ c.email }} quer entrar</h2>
-          <p class="text-xs text-fumaca mt-2">
-            Todos os membros precisam aprovar. Já aprovaram: {{ c.invite_approvals?.filter((a: any) => a.aprovado).length ?? 0 }}
+          <p class="text-xs text-fumaca font-semibold mt-2">
+            Quem convidou já entrou de acordo. Falta o aval dos outros membros.
           </p>
           <div class="flex gap-3 mt-5">
             <button class="btn-ouro flex-1" @click="aprovar(c.id, true)">Aprovar entrada</button>
