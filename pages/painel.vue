@@ -78,7 +78,7 @@ const podeCriar = computed(() => !meuSquadCriado.value);
               Quando ele terminar ou for excluído, você pode criar outro.
             </template>
             <template v-else>
-              Você pode ter um squad criado por você e participar de um squad de outra pessoa.
+              Você pode ter um squad criado por você e participar de outros dois como convidado.
             </template>
           </p>
           <NuxtLink v-if="podeCriar" to="/criar" class="btn-ouro">Criar meu squad</NuxtLink>

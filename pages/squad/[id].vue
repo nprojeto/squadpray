@@ -31,6 +31,10 @@ const diasEditados = computed(() => {
   return Math.floor((+new Date(editFim.value) - +new Date(editInicio.value)) / 86400000) + 1;
 });
 
+const edicaoValida = computed(() => semanal.value
+  ? Math.floor(diasEditados.value / 7) >= 4
+  : diasEditados.value >= 21);
+
 async function salvarDatas() {
   erro.value = null; salvandoDatas.value = true;
   try {
@@ -307,11 +311,14 @@ function jaConfirmei(f: any) {
                 <input id="ef" v-model="editFim" type="date" />
               </div>
             </div>
-            <p class="text-xs font-semibold" :class="diasEditados >= 21 ? 'text-verde' : 'text-laranja'">
-              {{ diasEditados }} dias — o mínimo é 21.
+            <p class="text-xs font-semibold" :class="edicaoValida ? 'text-verde' : 'text-laranja'">
+              <template v-if="semanal">
+                {{ Math.floor(diasEditados / 7) }} encontros — o mínimo é 4.
+              </template>
+              <template v-else>{{ diasEditados }} dias — o mínimo é 21.</template>
             </p>
             <div class="flex gap-3">
-              <button class="btn-ouro flex-1" :disabled="salvandoDatas || diasEditados < 21" @click="salvarDatas">
+              <button class="btn-ouro flex-1" :disabled="salvandoDatas || !edicaoValida" @click="salvarDatas">
                 {{ salvandoDatas ? "Salvando…" : "Salvar datas" }}
               </button>
               <button class="btn-fantasma" @click="editando = false">Cancelar</button>

@@ -303,7 +303,11 @@ Deno.serve(async (req) => {
         let inicio = data_inicio;
         if (SEMANAIS.includes(tipo)) inicio = proximaSegunda(new Date(data_inicio + "T12:00:00Z"));
         const dias = Math.floor((+new Date(data_fim) - +new Date(inicio)) / 86400000) + 1;
-        if (dias < 21) {
+        if (SEMANAIS.includes(tipo)) {
+          if (Math.floor(dias / 7) < 4) {
+            return erro("O ciclo precisa ter no mínimo 4 encontros.");
+          }
+        } else if (dias < 21) {
           return erro("O ciclo precisa ter no mínimo 21 dias corridos.");
         }
 
@@ -373,7 +377,12 @@ Deno.serve(async (req) => {
         const fim = body.data_fim ?? squad.data_fim;
         if (SEMANAIS.includes(squad.tipo)) inicio = proximaSegunda(new Date(inicio + "T12:00:00Z"));
         const dias = Math.floor((+new Date(fim) - +new Date(inicio)) / 86400000) + 1;
-        if (dias < 21) return erro(`O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`);
+        if (SEMANAIS.includes(squad.tipo)) {
+          const encontros = Math.floor(dias / 7);
+          if (encontros < 4) return erro(`O ciclo precisa ter no mínimo 4 encontros. O seu tem ${encontros}.`);
+        } else if (dias < 21) {
+          return erro(`O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`);
+        }
         campos.data_inicio = inicio;
         campos.data_fim = fim;
         campos.updated_at = new Date().toISOString();
@@ -395,7 +404,12 @@ Deno.serve(async (req) => {
 
         const diasCiclo = Math.floor(
           (+new Date(squad.data_fim) - +new Date(squad.data_inicio)) / 86400000) + 1;
-        if (diasCiclo < 21) {
+        if (SEMANAIS.includes(squad.tipo)) {
+          const encontros = Math.floor(diasCiclo / 7);
+          if (encontros < 4) {
+            return erro(`Este ciclo tem só ${encontros} encontros. Ajuste as datas para no mínimo 4 antes de começar.`);
+          }
+        } else if (diasCiclo < 21) {
           return erro(`Este ciclo tem só ${diasCiclo} dias. Ajuste as datas para no mínimo 21 antes de começar.`);
         }
 
@@ -711,15 +725,16 @@ Deno.serve(async (req) => {
           await db.from("squad_invites").update({ status: "recusado" }).eq("id", conviteId);
           return ok({ status: "recusado" });
         }
-        // só é possível participar de um squad de outra pessoa por vez
+        // limite: até 2 squads abertos como convidado
         const { data: meusVinculos } = await db.from("squad_members")
           .select("squad_id, squads(status, criado_por, nome)")
           .eq("user_id", user.id).eq("status", "ativo");
-        const convidadoAberto = (meusVinculos ?? []).find((v: any) =>
+        const comoConvidado = (meusVinculos ?? []).filter((v: any) =>
           v.squads && v.squads.criado_por !== user.id &&
           ["rascunho", "ativo"].includes(v.squads.status));
-        if (convidadoAberto) {
-          return erro(`Você já participa do squad ${convidadoAberto.squads.nome}. Espere ele terminar para entrar em outro.`);
+        if (comoConvidado.length >= 2) {
+          const nomes = comoConvidado.map((v: any) => v.squads.nome).join(" e ");
+          return erro(`Você já participa de ${nomes}. O limite é de dois squads como convidado — espere um deles terminar.`);
         }
 
         await db.from("squad_invites").update({

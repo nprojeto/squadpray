@@ -43,9 +43,13 @@ const valorPeriodo = computed(() => (totalPeriodos.value ? 100 / totalPeriodos.v
 
 const minimoFim = computed(() => {
   const d = new Date(inicioReal.value + "T12:00:00");
-  d.setDate(d.getDate() + 20);
+  d.setDate(d.getDate() + (semanal.value ? 27 : 20));
   return d.toISOString().slice(0, 10);
 });
+
+const regraMinima = computed(() => semanal.value
+  ? "No mínimo 4 encontros. O card abre assim que duas pessoas entrarem."
+  : "Mínimo de 21 dias corridos. O card abre assim que duas pessoas entrarem.");
 
 watch(tipo, () => { if (semanal.value) inicio.value = proximaSegunda(); });
 
@@ -66,7 +70,12 @@ async function criar() {
   if (!fim.value) { eFim.value = "Escolha a data de término."; focar("f"); return; }
 
   const dias = Math.floor((+new Date(fim.value) - +new Date(inicioReal.value)) / 86400000) + 1;
-  if (dias < 21) {
+  if (semanal.value) {
+    if (totalPeriodos.value < 4) {
+      eFim.value = `O ciclo precisa ter no mínimo 4 encontros. O seu tem ${totalPeriodos.value}.`;
+      focar("f"); return;
+    }
+  } else if (dias < 21) {
     eFim.value = `O ciclo precisa ter no mínimo 21 dias corridos. O seu tem ${dias}.`;
     focar("f"); return;
   }
@@ -89,7 +98,7 @@ async function criar() {
   <div class="max-w-2xl mx-auto">
     <NuxtLink to="/painel" class="rotulo hover:text-tinta">← meus squads</NuxtLink>
     <h1 class="text-4xl mt-4">Criar meu squad</h1>
-    <p class="text-fumaca mt-2">Cada pessoa cria apenas um. Você pode participar de quantos for convidado.</p>
+    <p class="text-fumaca mt-2">Você pode ter um squad criado por você e participar de outros dois como convidado.</p>
 
     <div v-if="meuSquadCriado" class="painel p-7 mt-8 text-center">
       <EmojiCristao codigo="coroa" :tamanho="40" class="mx-auto" />
@@ -166,7 +175,7 @@ async function criar() {
         <p class="rotulo">Como fica a pontuação</p>
         <p class="text-fumaca text-sm mt-2">
           <span class="font-mono text-tinta">{{ totalPeriodos }}</span>
-          {{ semanal ? 'semanas' : 'dias' }} no ciclo · cada
+          {{ semanal ? 'encontros' : 'dias' }} no ciclo · cada
           {{ semanal ? 'semana cumprida' : 'dia cumprido' }} por todos vale
           <span class="font-mono text-laranja">{{ valorPeriodo.toFixed(2) }}</span> pontos.
           O ciclo inteiro soma 100 — e os pontos só entram quando ele terminar.
@@ -178,9 +187,7 @@ async function criar() {
       <button class="btn-ouro w-full" :disabled="salvando">
         {{ salvando ? "Criando…" : "Criar squad e convidar pessoas" }}
       </button>
-      <p class="text-xs text-fumaca text-center font-semibold">
-        Mínimo de 21 dias corridos. O card abre com 2 pessoas.
-      </p>
+      <p class="text-xs text-fumaca text-center font-semibold">{{ regraMinima }}</p>
     </form>
   </div>
 </template>

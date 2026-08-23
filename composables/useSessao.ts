@@ -36,7 +36,21 @@ export function useSessao() {
       ehAdmin.value = r.admin === true;
       senhaProvisoria.value = r.senha_provisoria === true;
     } catch (e: any) {
-      falha.value = e?.message ?? "Não foi possível carregar seus dados.";
+      const msg = e?.message ?? "Não foi possível carregar seus dados.";
+      // sessão ainda sendo restaurada: tenta de novo antes de reclamar
+      if (msg.includes("Faça login")) {
+        try {
+          const r: any = await api.meuPainel();
+          if (r.perfil) perfil.value = r.perfil;
+          squads.value = r.squads ?? [];
+          naoLidas.value = r.notificacoes_nao_lidas ?? 0;
+          convitesPendentes.value = r.convites_pendentes ?? 0;
+          ehAdmin.value = r.admin === true;
+          senhaProvisoria.value = r.senha_provisoria === true;
+          return;
+        } catch { /* segue para o aviso */ }
+      }
+      falha.value = msg;
     } finally {
       carregando.value = false;
     }
