@@ -19,6 +19,16 @@ function baseUrl(): string {
   return `${cfg.supabaseUrl}/functions/v1/api`;
 }
 
+async function pegarToken(esperar = true): Promise<string | null> {
+  const tentativas = esperar ? 14 : 1;
+  for (let i = 0; i < tentativas; i++) {
+    const { data } = await supabase().auth.getSession();
+    if (data.session?.access_token) return data.session.access_token;
+    if (i < tentativas - 1) await new Promise((r) => setTimeout(r, 150));
+  }
+  return null;
+}
+
 async function chamar<T = any>(
   rota: string,
   opcoes: { metodo?: string; corpo?: any } = {},
@@ -27,18 +37,31 @@ async function chamar<T = any>(
   if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
     throw new Error("O site ainda não foi conectado ao Supabase. Edite o arquivo config.json com sua URL e sua chave.");
   }
-  const { data } = await supabase().auth.getSession();
-  const token = data.session?.access_token;
 
-  const resp = await fetch(baseUrl() + rota, {
-    method: metodo,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: cfg.supabaseAnonKey,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: corpo ? JSON.stringify(corpo) : undefined,
-  });
+  async function disparar(token: string | null) {
+    return fetch(baseUrl() + rota, {
+      method: metodo,
+      headers: {
+        "Content-Type": "application/json",
+        apikey: cfg.supabaseAnonKey,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: corpo ? JSON.stringify(corpo) : undefined,
+    });
+  }
+
+  let token = await pegarToken();
+  let resp = await disparar(token);
+
+  // sessão vencida: renova e tenta mais uma vez antes de reclamar
+  if (resp.status === 401) {
+    const { data } = await supabase().auth.refreshSession();
+    const novo = data.session?.access_token ?? (await pegarToken(false));
+    if (novo && novo !== token) {
+      token = novo;
+      resp = await disparar(token);
+    }
+  }
 
   const json = await resp.json().catch(() => ({}));
   if (!resp.ok) throw new Error(json?.erro || "Não foi possível concluir. Tente de novo.");
