@@ -30,3 +30,14 @@ create policy "desfavorito" on public.favoritos for delete to authenticated
   using (user_id = auth.uid());
 
 -- FIM
+
+-- ============================================================
+--  Mínimo de pessoas no squad: 2 (um casal em propósito)
+-- ============================================================
+
+alter table public.squads drop constraint if exists squads_tamanho_ok;
+alter table public.squads
+  add constraint squads_tamanho_ok check (min_membros >= 2 and max_membros <= 6);
+
+alter table public.squads alter column min_membros set default 2;
+update public.squads set min_membros = 2 where min_membros > 2 and status = 'rascunho';

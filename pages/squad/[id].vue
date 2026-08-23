@@ -279,7 +279,7 @@ function jaConfirmei(f: any) {
     <section v-if="squad.status === 'rascunho'" class="painel p-7 mt-8">
       <h2 class="text-2xl">Montando o squad</h2>
       <p class="text-fumaca mt-2 text-sm">
-        {{ membros.length }} de 6 pessoas. O card abre com 3.
+        {{ membros.length }} de 6 pessoas. O card abre com 2.
       </p>
 
       <div v-if="souCriador" class="mt-6 space-y-4">
@@ -342,8 +342,8 @@ function jaConfirmei(f: any) {
           </ul>
         </div>
 
-        <button class="btn-ouro w-full" :disabled="membros.length < 3" @click="ativar">
-          {{ membros.length < 3 ? `Faltam ${3 - membros.length} para começar` : "Começar o ciclo" }}
+        <button class="btn-ouro w-full" :disabled="membros.length < 2" @click="ativar">
+          {{ membros.length < 2 ? `Falta ${2 - membros.length} para começar` : "Começar o ciclo" }}
         </button>
       </div>
       <p v-else class="text-fumaca text-sm mt-4">

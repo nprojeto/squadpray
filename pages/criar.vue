@@ -159,7 +159,7 @@ async function criar() {
         {{ salvando ? "Criando…" : "Criar squad e convidar pessoas" }}
       </button>
       <p class="text-xs text-fumaca text-center font-semibold">
-        Mínimo de 21 dias corridos. O card só abre com pelo menos 3 pessoas dentro.
+        Mínimo de 21 dias corridos. O card abre com 2 pessoas — pode ser um casal em propósito.
       </p>
     </form>
   </div>

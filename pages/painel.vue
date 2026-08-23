@@ -38,7 +38,7 @@ const podeCriar = computed(() => !meuSquadCriado.value);
         <EmojiCristao codigo="semente" :tamanho="52" class="mx-auto" />
         <h2 class="text-3xl mt-4">Nenhum squad ainda</h2>
         <p class="font-semibold text-fumaca mt-2 max-w-md mx-auto">
-          Crie o seu e convide pelo menos mais duas pessoas, ou espere um convite chegar.
+          Crie o seu e convide pelo menos mais uma pessoa, ou espere um convite chegar.
         </p>
         <div class="flex flex-wrap gap-3 justify-center mt-7">
           <NuxtLink to="/criar" class="btn-ouro">Criar meu squad</NuxtLink>

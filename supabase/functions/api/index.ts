@@ -282,7 +282,7 @@ Deno.serve(async (req) => {
         const { count } = await db.from("squad_members")
           .select("*", { count: "exact", head: true })
           .eq("squad_id", squadId).eq("status", "ativo");
-        if ((count ?? 0) < 3) return erro("São necessárias pelo menos 3 pessoas para abrir o card.");
+        if ((count ?? 0) < 2) return erro("São necessárias pelo menos 2 pessoas para abrir o card.");
 
         const diasCiclo = Math.floor(
           (+new Date(squad.data_fim) - +new Date(squad.data_inicio)) / 86400000) + 1;
