@@ -69,11 +69,7 @@ async function alternarFavorito(p: any) {
 
     <ul v-else class="grid sm:grid-cols-2 gap-4 mt-8">
       <li v-for="p in lista" :key="p.id" class="painel p-5 flex items-center gap-4">
-        <component
-          :is="souPublico ? 'NuxtLink' : 'div'" :to="souPublico ? `/prayer/${p.id}` : undefined"
-          class="flex items-center gap-4 min-w-0 flex-1"
-          :class="souPublico ? 'hover:text-laranja' : ''"
-        >
+        <NuxtLink :to="`/prayer/${p.id}`" class="flex items-center gap-4 min-w-0 flex-1 hover:text-laranja">
           <AvatarPerfil :url="p.avatar_url" :nome="p.nome" :tamanho="56" />
           <div class="min-w-0">
             <p class="font-display text-xl truncate">{{ p.nome }}</p>
@@ -81,7 +77,7 @@ async function alternarFavorito(p: any) {
             <p v-else-if="!p.perfil_publico" class="text-xs font-semibold text-fumaca">perfil fechado</p>
             <p class="font-mono text-sm font-bold mt-0.5">{{ Number(p.pontos_total).toFixed(0) }} pts</p>
           </div>
-        </component>
+        </NuxtLink>
 
         <button
           v-if="souPublico && p.perfil_publico"
