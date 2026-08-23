@@ -4,6 +4,8 @@ const perfil = ref<Perfil | null>(null);
 const squads = ref<Squad[]>([]);
 const naoLidas = ref(0);
 const convitesPendentes = ref(0);
+const ehAdmin = ref(false);
+const senhaProvisoria = ref(false);
 const carregando = ref(true);
 const temSessao = ref(false);
 const falha = ref<string | null>(null);
@@ -31,6 +33,8 @@ export function useSessao() {
       squads.value = r.squads ?? [];
       naoLidas.value = r.notificacoes_nao_lidas ?? 0;
       convitesPendentes.value = r.convites_pendentes ?? 0;
+      ehAdmin.value = r.admin === true;
+      senhaProvisoria.value = r.senha_provisoria === true;
     } catch (e: any) {
       falha.value = e?.message ?? "Não foi possível carregar seus dados.";
     } finally {
@@ -52,6 +56,6 @@ export function useSessao() {
     squads.value.find((s) => s.criado_por === perfil.value?.id &&
       ["rascunho", "ativo"].includes(s.status)));
 
-  return { perfil, squads, naoLidas, convitesPendentes, carregando, falha, logado,
+  return { perfil, squads, naoLidas, convitesPendentes, ehAdmin, senhaProvisoria, carregando, falha, logado,
            temSelo, melhorStreak, meuSquadCriado, carregar, sair };
 }

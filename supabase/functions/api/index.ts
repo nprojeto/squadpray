@@ -146,6 +146,8 @@ Deno.serve(async (req) => {
 
         return ok({
           perfil, squads: squads ?? [],
+          admin: perfil?.admin === true,
+          senha_provisoria: perfil?.senha_provisoria === true,
           notificacoes_nao_lidas: naoLidas ?? 0,
           convites_pendentes: (convParaMim?.length ?? 0) + paraAprovar,
         });
@@ -163,6 +165,113 @@ Deno.serve(async (req) => {
         if (error) return erro(error.message);
         return ok({ perfil: data });
       }
+    }
+
+    // ============ MINHA SENHA ============
+    if (seg[0] === "me" && seg[1] === "senha" && metodo === "POST") {
+      const nova = String(body.senha ?? "");
+      if (nova.length < 6) return erro("A senha precisa ter pelo menos 6 caracteres.");
+      if (nova === "Mudar@123") return erro("Escolha uma senha diferente da provisória.");
+
+      const { error } = await db.auth.admin.updateUserById(user.id, { password: nova });
+      if (error) return erro(error.message);
+      await db.from("profiles")
+        .update({ senha_provisoria: false, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      return ok({ sucesso: true });
+    }
+
+    // ============ ADMINISTRAÇÃO ============
+    if (seg[0] === "admin") {
+      const { data: euAdmin } = await db.from("profiles")
+        .select("admin").eq("id", user.id).maybeSingle();
+      if (euAdmin?.admin !== true) return erro("Área restrita aos administradores.", 403);
+
+      // GET /admin/painel
+      if (seg[1] === "painel" && metodo === "GET") {
+        const { data: numeros, error } = await db.rpc("numeros_plataforma");
+        if (error) return erro(error.message);
+
+        const { data: squads } = await db.from("v_squad_resumo")
+          .select("*").order("pontos_total", { ascending: false }).limit(50);
+
+        const { data: recentes } = await db.from("profiles")
+          .select("id, nome, email, avatar_url, igreja, pontos_total, admin, created_at")
+          .order("created_at", { ascending: false }).limit(10);
+
+        return ok({ numeros, squads: squads ?? [], recentes: recentes ?? [] });
+      }
+
+      // GET /admin/usuarios?q=
+      if (seg[1] === "usuarios" && !seg[2] && metodo === "GET") {
+        const q = (url.searchParams.get("q") ?? "").trim();
+        let consulta = db.from("profiles").select("*").order("nome");
+        if (q) consulta = consulta.or(`nome.ilike.%${q}%,email.ilike.%${q}%,igreja.ilike.%${q}%`);
+        const { data, error } = await consulta;
+        if (error) return erro(error.message);
+        return ok({ usuarios: data ?? [] });
+      }
+
+      // GET /admin/usuarios/:id
+      if (seg[1] === "usuarios" && seg[2] && !seg[3] && metodo === "GET") {
+        const { data: p } = await db.from("profiles").select("*").eq("id", seg[2]).maybeSingle();
+        if (!p) return erro("Pessoa não encontrada.", 404);
+        const { data: vinculos } = await db.from("squad_members")
+          .select("papel, status, squads(id, nome, tipo, status, streak_atual)")
+          .eq("user_id", seg[2]);
+        return ok({ usuario: p, squads: vinculos ?? [] });
+      }
+
+      // PATCH /admin/usuarios/:id
+      if (seg[1] === "usuarios" && seg[2] && !seg[3] && metodo === "PATCH") {
+        const campos: any = {};
+        for (const k of ["nome", "bio", "igreja", "ministerios", "data_nascimento",
+                         "instagram", "facebook", "tiktok", "youtube",
+                         "perfil_publico", "avatar_url", "timezone", "admin", "pontos_total"]) {
+          if (body[k] !== undefined) campos[k] = body[k];
+        }
+        if (!Object.keys(campos).length) return erro("Nada para alterar.");
+        campos.updated_at = new Date().toISOString();
+
+        const { data, error } = await db.from("profiles")
+          .update(campos).eq("id", seg[2]).select().single();
+        if (error) return erro(error.message);
+
+        if (body.email) {
+          const { error: e2 } = await db.auth.admin.updateUserById(seg[2], { email: body.email });
+          if (e2) return erro(`Dados salvos, mas o e-mail não mudou: ${e2.message}`);
+          await db.from("profiles").update({ email: body.email }).eq("id", seg[2]);
+        }
+        return ok({ usuario: data });
+      }
+
+      // POST /admin/usuarios/:id/resetar-senha
+      if (seg[1] === "usuarios" && seg[2] && seg[3] === "resetar-senha" && metodo === "POST") {
+        const { error } = await db.auth.admin.updateUserById(seg[2], { password: "Mudar@123" });
+        if (error) return erro(error.message);
+        await db.from("profiles")
+          .update({ senha_provisoria: true, updated_at: new Date().toISOString() })
+          .eq("id", seg[2]);
+        await notificar(db, [seg[2]], "Sua senha foi redefinida",
+          "Entre com a senha provisória e cadastre uma nova.", "/perfil");
+        return ok({ sucesso: true, senha: "Mudar@123" });
+      }
+
+      // DELETE /admin/usuarios/:id
+      if (seg[1] === "usuarios" && seg[2] && metodo === "DELETE") {
+        if (seg[2] === user.id) return erro("Você não pode excluir a própria conta por aqui.");
+        const { error } = await db.auth.admin.deleteUser(seg[2]);
+        if (error) return erro(error.message);
+        return ok({ excluido: true });
+      }
+
+      // DELETE /admin/squads/:id
+      if (seg[1] === "squads" && seg[2] && metodo === "DELETE") {
+        await db.from("squads").delete().eq("id", seg[2]);
+        return ok({ excluido: true });
+      }
+
+      return erro("Rota de administração não encontrada.", 404);
     }
 
     // ============ SQUADS ============

@@ -54,6 +54,7 @@ export interface Perfil {
   id: string; nome: string; email: string; avatar_url?: string;
   bio?: string; timezone: string; pontos_total: number;
   igreja?: string; ministerios?: string; data_nascimento?: string;
+  admin?: boolean; senha_provisoria?: boolean;
   instagram?: string; facebook?: string; tiktok?: string; youtube?: string;
   perfil_publico?: boolean;
 }
@@ -153,6 +154,18 @@ export const api = {
   favoritar: (id: string, favorito: boolean) =>
     chamar(`/rede/favoritar/${id}`, { metodo: "POST", corpo: { favorito } }),
   verPrayer: (id: string) => chamar(`/prayer/${id}`),
+
+  trocarSenha: (senha: string) => chamar("/me/senha", { metodo: "POST", corpo: { senha } }),
+
+  adminPainel: () => chamar("/admin/painel"),
+  adminUsuarios: (q = "") => chamar(`/admin/usuarios?q=${encodeURIComponent(q)}`),
+  adminUsuario: (id: string) => chamar(`/admin/usuarios/${id}`),
+  adminEditar: (id: string, dados: Record<string, any>) =>
+    chamar(`/admin/usuarios/${id}`, { metodo: "PATCH", corpo: dados }),
+  adminResetarSenha: (id: string) =>
+    chamar(`/admin/usuarios/${id}/resetar-senha`, { metodo: "POST" }),
+  adminExcluirUsuario: (id: string) => chamar(`/admin/usuarios/${id}`, { metodo: "DELETE" }),
+  adminExcluirSquad: (id: string) => chamar(`/admin/squads/${id}`, { metodo: "DELETE" }),
 
   publicarArtigo: (squadId: string, dados: {
     period_id: string; titulo?: string; referencia?: string; conteudo: string;

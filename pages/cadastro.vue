@@ -2,20 +2,21 @@
 import { auth, api } from "~/lib/api";
 
 const passo = ref(1);
-const nome = ref(""); const email = ref(""); const senha = ref("");
+const nome = ref(""); const email = ref(""); const senha = ref(""); const confirma = ref("");
 const bio = ref(""); const igreja = ref(""); const ministerios = ref("");
 const nascimento = ref(""); const instagram = ref(""); const facebook = ref("");
 const tiktok = ref(""); const youtube = ref(""); const publico = ref(true);
 
 const erro = ref<string | null>(null); const pronto = ref(false); const carregando = ref(false);
-const eNome = ref<string | null>(null); const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null);
+const eNome = ref<string | null>(null); const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null); const eConfirma = ref<string | null>(null);
 const { carregar } = useSessao();
 
 async function criarConta() {
-  erro.value = null; eNome.value = eEmail.value = eSenha.value = null;
+  erro.value = null; eNome.value = eEmail.value = eSenha.value = eConfirma.value = null;
   if (!nome.value.trim()) { eNome.value = "Diga como podemos te chamar."; return; }
   if (!/.+@.+\..+/.test(email.value.trim())) { eEmail.value = "Digite um e-mail válido."; return; }
   if (senha.value.length < 6) { eSenha.value = "A senha precisa ter pelo menos 6 caracteres."; return; }
+  if (senha.value !== confirma.value) { eConfirma.value = "As duas senhas precisam ser iguais."; return; }
   carregando.value = true;
   try {
     const r: any = await auth.cadastrar(nome.value.trim(), email.value.trim(), senha.value);
@@ -78,6 +79,12 @@ async function salvarPerfil() {
         <input id="s" v-model="senha" type="password" autocomplete="new-password" placeholder="Mínimo de 6 caracteres"
                :class="eSenha ? '!border-laranja' : ''" @input="eSenha = null" />
         <CampoErro :mensagem="eSenha" />
+      </div>
+      <div>
+        <label for="s2">Repita a senha</label>
+        <input id="s2" v-model="confirma" type="password" autocomplete="new-password" placeholder="Digite a senha de novo"
+               :class="eConfirma ? '!border-laranja' : ''" @input="eConfirma = null" />
+        <CampoErro :mensagem="eConfirma" />
       </div>
       <AvisoErro :mensagem="erro" />
       <button class="btn-ouro w-full" :disabled="carregando">

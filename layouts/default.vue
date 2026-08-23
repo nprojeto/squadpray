@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { perfil, convitesPendentes, naoLidas, carregar, sair, logado, falha, temSelo, melhorStreak } = useSessao();
+const { perfil, convitesPendentes, naoLidas, carregar, sair, logado, falha, temSelo, melhorStreak, ehAdmin, senhaProvisoria } = useSessao();
 const { escuro, alternar, iniciar } = useTema();
 const gaveta = ref(false);
 const contaAberta = ref(false);
@@ -23,6 +23,8 @@ const recado = computed(() => {
   if (p === "/criar") return "junte duas e comece";
   if (p.startsWith("/prayer/")) return "gente de fé se encontra";
   if (p === "/cadastro") return "bem-vindo à rede";
+  if (p === "/admin") return "os números da plataforma";
+  if (p === "/nova-senha") return "só mais um passo";
   return "fé que se pratica em grupo";
 });
 
@@ -31,7 +33,12 @@ const links = computed(() => [
   { para: "/rede", texto: "Rede", contador: 0 },
   { para: "/convites", texto: "Convites", contador: convitesPendentes.value },
   { para: "/historico", texto: "Histórico", contador: 0 },
+  ...(ehAdmin.value ? [{ para: "/admin", texto: "Painel admin", contador: 0 }] : []),
 ]);
+
+watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
+  if (provisoria && caminho !== "/nova-senha") navigateTo("/nova-senha");
+});
 </script>
 
 <template>
@@ -97,6 +104,7 @@ const links = computed(() => [
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
+              <NuxtLink v-if="ehAdmin" to="/admin" class="btn-fantasma w-full justify-start">Painel admin</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click.stop="alternar">
                 {{ escuro ? "☀ Tema claro" : "☾ Tema escuro" }}
               </button>

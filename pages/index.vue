@@ -4,6 +4,7 @@ import { auth } from "~/lib/api";
 const email = ref(""); const senha = ref("");
 const erro = ref<string | null>(null); const carregando = ref(false);
 const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null);
+const mostrarAjuda = ref(false);
 const { carregar } = useSessao();
 
 async function entrar() {
@@ -132,6 +133,20 @@ const tipos = [
           {{ carregando ? "Entrando…" : "Entrar" }}
         </button>
       </form>
+
+      <button type="button" class="btn-fantasma w-full mt-3 text-xs" @click="mostrarAjuda = !mostrarAjuda">
+        Esqueci minha senha
+      </button>
+
+      <div v-if="mostrarAjuda" class="mt-3 border-2 border-tinta rounded-lg bg-amarelo p-4">
+        <p class="font-bold text-sm">Fale com um administrador</p>
+        <p class="text-sm font-semibold mt-2">
+          A troca de senha é feita pela equipe. Chame em um destes números:
+        </p>
+        <p class="font-mono font-bold mt-2 leading-relaxed">
+          (12) 99704-7380<br />(12) 99726-2247
+        </p>
+      </div>
 
       <div class="chumbo mt-6 pt-5 text-sm font-semibold">
         Ainda não tem conta?
