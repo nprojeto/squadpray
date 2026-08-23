@@ -339,7 +339,7 @@ function jaConfirmei(f: any) {
               <span class="text-sm font-semibold break-all">
                 {{ c.email }}
                 <span class="block text-xs text-fumaca font-normal">
-                  {{ c.status === 'pendente' ? 'aguardando a pessoa aceitar' : 'aguardando o squad aprovar' }}
+                  aguardando a pessoa aceitar
                 </span>
               </span>
               <button class="btn-fantasma !px-3 !py-1.5 text-xs shrink-0" @click="cancelarConvite(c.id)">
@@ -603,7 +603,7 @@ function jaConfirmei(f: any) {
             <button class="btn-vidro shrink-0" :disabled="convidando">Convidar</button>
           </form>
           <p class="text-xs text-fumaca font-semibold mt-3">
-            A pessoa aceita e depois os outros membros aprovam a entrada.
+            Assim que a pessoa aceitar, ela já entra no squad.
           </p>
         </div>
 

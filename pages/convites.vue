@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { api, TIPOS_SQUAD, dataBR } from "~/lib/api";
 
-const paraMim = ref<any[]>([]); const paraAprovar = ref<any[]>([]);
+const paraMim = ref<any[]>([]);
 const carregando = ref(true); const erro = ref<string | null>(null); const aviso = ref<string | null>(null);
 const { carregar } = useSessao();
 
 async function buscar() {
   carregando.value = true;
-  try { const r: any = await api.convites(); paraMim.value = r.para_mim; paraAprovar.value = r.para_aprovar; }
+  try { const r: any = await api.convites(); paraMim.value = r.para_mim ?? []; }
   catch (e: any) { erro.value = e.message; }
   finally { carregando.value = false; }
 }
@@ -17,24 +17,17 @@ async function responder(id: string, aceitar: boolean) {
   erro.value = null;
   try {
     await api.responderConvite(id, aceitar);
-    aviso.value = aceitar
-      ? "Convite aceito. Agora os membros do squad precisam aprovar sua entrada."
-      : "Convite recusado.";
+    aviso.value = aceitar ? "Pronto, você entrou no squad." : "Convite recusado.";
     await buscar(); await carregar();
   } catch (e: any) { erro.value = e.message; }
 }
 
-async function aprovar(id: string, ok: boolean) {
-  erro.value = null;
-  try { await api.aprovarConvite(id, ok); aviso.value = ok ? "Você aprovou." : "Você recusou a entrada."; await buscar(); }
-  catch (e: any) { erro.value = e.message; }
-}
 </script>
 
 <template>
   <div class="max-w-2xl">
     <h1 class="text-4xl">Convites</h1>
-    <p class="text-fumaca mt-2">Quem entra no squad passa pelo aval de todos.</p>
+    <p class="font-semibold text-fumaca mt-2">Aceitou, entrou. Simples assim.</p>
 
     <AvisoErro :mensagem="erro" class="mt-6" />
     <AvisoErro :mensagem="aviso" tipo="ok" class="mt-6" />
@@ -59,21 +52,6 @@ async function aprovar(id: string, ok: boolean) {
         </div>
       </section>
 
-      <section class="mt-10">
-        <p class="rotulo mb-3">Esperando sua aprovação</p>
-        <div v-if="!paraAprovar.length" class="painel p-6 text-fumaca text-sm">Nada para aprovar agora.</div>
-        <div v-for="c in paraAprovar" :key="c.id" class="painel p-6 mb-3">
-          <p class="rotulo">{{ c.squads?.nome }}</p>
-          <h2 class="text-xl mt-1">{{ c.email }} quer entrar</h2>
-          <p class="text-xs text-fumaca font-semibold mt-2">
-            Quem convidou já entrou de acordo. Falta o aval dos outros membros.
-          </p>
-          <div class="flex gap-3 mt-5">
-            <button class="btn-ouro flex-1" @click="aprovar(c.id, true)">Aprovar entrada</button>
-            <button class="btn-fantasma" @click="aprovar(c.id, false)">Recusar</button>
-          </div>
-        </div>
-      </section>
     </template>
   </div>
 </template>

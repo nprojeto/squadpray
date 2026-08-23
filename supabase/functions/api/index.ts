@@ -132,24 +132,12 @@ Deno.serve(async (req) => {
         const { data: convParaMim } = await db.from("squad_invites")
           .select("id").or(`user_id.eq.${user.id},email.ilike.${meuEmail}`).eq("status", "pendente");
 
-        const meusIds = (await db.from("squad_members").select("squad_id")
-          .eq("user_id", user.id).eq("status", "ativo")).data?.map((m: any) => m.squad_id) ?? [];
-        let paraAprovar = 0;
-        if (meusIds.length) {
-          const { data: pend } = await db.from("squad_invites")
-            .select("id, user_id, convidado_por, invite_approvals(user_id)")
-            .in("squad_id", meusIds).eq("status", "aceito");
-          paraAprovar = (pend ?? []).filter((c: any) =>
-            c.user_id !== user.id && c.convidado_por !== user.id &&
-            !c.invite_approvals?.some((a: any) => a.user_id === user.id)).length;
-        }
-
         return ok({
           perfil, squads: squads ?? [],
           admin: perfil?.admin === true,
           senha_provisoria: perfil?.senha_provisoria === true,
           notificacoes_nao_lidas: naoLidas ?? 0,
-          convites_pendentes: (convParaMim?.length ?? 0) + paraAprovar,
+          convites_pendentes: convParaMim?.length ?? 0,
         });
       }
       if (metodo === "PATCH") {
@@ -687,20 +675,7 @@ Deno.serve(async (req) => {
           .or(`user_id.eq.${user.id},email.ilike.${email}`)
           .eq("status", "pendente");
 
-        const { data: meusSquads } = await db.from("squad_members")
-          .select("squad_id").eq("user_id", user.id).eq("status", "ativo");
-        const ids = meusSquads?.map((m: any) => m.squad_id) ?? [];
-        let paraAprovar: any[] = [];
-        if (ids.length) {
-          const { data } = await db.from("squad_invites")
-            .select("*, squads(id, nome, tipo), invite_approvals(user_id, aprovado)")
-            .in("squad_id", ids).eq("status", "aceito");
-          paraAprovar = (data ?? []).filter(
-            (c: any) => c.user_id !== user.id && c.convidado_por !== user.id &&
-              !c.invite_approvals?.some((a: any) => a.user_id === user.id),
-          );
-        }
-        return ok({ para_mim: paraMim ?? [], para_aprovar: paraAprovar });
+        return ok({ para_mim: paraMim ?? [], para_aprovar: [] });
       }
 
       const conviteId = seg[1];
@@ -741,13 +716,16 @@ Deno.serve(async (req) => {
           status: "aceito", user_id: user.id, aceito_em: new Date().toISOString(),
         }).eq("id", conviteId);
 
+        const { data: eu } = await db.from("profiles").select("nome").eq("id", user.id).maybeSingle();
         const { data: membros } = await db.from("squad_members")
           .select("user_id").eq("squad_id", conv.squad_id).eq("status", "ativo")
-          .neq("user_id", conv.convidado_por);
+          .neq("user_id", user.id);
         await notificar(db, membros?.map((m: any) => m.user_id) ?? [],
-          "Alguém quer entrar no squad", "Confirme para liberar a entrada.", "/convites");
+          "Gente nova no squad",
+          `${eu?.nome ?? "Alguém"} entrou no squad ${squadConv?.nome ?? ""}.`.trim(),
+          `/squad/${conv.squad_id}`);
 
-        return ok({ status: "aceito", aguardando: "aprovação de todos os membros" });
+        return ok({ status: "aprovado", entrou: true });
       }
 
       // POST /convites/:id/aprovar { aprovado: true|false }
