@@ -279,7 +279,7 @@ function jaConfirmei(f: any) {
     <section v-if="squad.status === 'rascunho'" class="painel p-7 mt-8">
       <h2 class="text-2xl">Montando o squad</h2>
       <p class="text-fumaca mt-2 text-sm">
-        {{ membros.length }} de 6 pessoas. O card abre com 2.
+        {{ membros.length }} {{ membros.length === 1 ? "pessoa" : "pessoas" }} no squad. O card abre com 2.
       </p>
 
       <div v-if="souCriador" class="mt-6 space-y-4">
@@ -589,7 +589,7 @@ function jaConfirmei(f: any) {
           </ol>
         </div>
 
-        <div v-if="souCriador && membros.length < 6" class="painel p-6">
+        <div v-if="souCriador && squad.status === 'rascunho'" class="painel p-6">
           <p class="rotulo mb-3">Convidar mais alguém</p>
           <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="convidar">
             <input v-model="emailConvite" type="email" required placeholder="e-mail da pessoa" />

@@ -425,13 +425,6 @@ Deno.serve(async (req) => {
         const email = String(body.email ?? "").trim().toLowerCase();
         if (!email) return erro("Informe o e-mail de quem você quer convidar.");
 
-        const { count } = await db.from("squad_members")
-          .select("*", { count: "exact", head: true })
-          .eq("squad_id", squadId).eq("status", "ativo");
-        if ((count ?? 0) >= squad.max_membros) {
-          return erro(`Este squad já tem ${squad.max_membros} pessoas, o máximo permitido.`);
-        }
-
         const { data: perfil } = await db.from("profiles")
           .select("id, nome").ilike("email", email).maybeSingle();
 

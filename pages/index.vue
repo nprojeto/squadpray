@@ -103,7 +103,7 @@ const tipos = [
       </div>
 
       <dl class="grid grid-cols-3 gap-4 mt-10">
-        <div><dt class="rotulo">squad</dt><dd class="font-display text-4xl mt-1">2 a 6</dd></div>
+        <div><dt class="rotulo">squad</dt><dd class="font-display text-4xl mt-1">2+</dd></div>
         <div><dt class="rotulo">artigo</dt><dd class="font-display text-4xl mt-1">200+</dd></div>
         <div><dt class="rotulo">ciclo vale</dt><dd class="font-display text-4xl mt-1">100</dd></div>
       </dl>
