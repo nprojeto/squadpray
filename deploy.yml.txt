@@ -25,21 +25,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: Fixar npm 10
-        run: npm install -g npm@10
+          node-version: 20
 
       - name: Instalar dependencias
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install --no-package-lock --no-audit --no-fund
+        run: npm install
 
       - name: Gerar site
         env:
           NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: npx nuxt generate
+        run: npm run generate
 
       - name: Ajustes finais
         run: |
