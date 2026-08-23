@@ -20,7 +20,7 @@ const recado = computed(() => {
   if (p === "/historico") return "o que vocês construíram fica guardado";
   if (p === "/perfil") return "sua caminhada guiada por Jesus";
   if (p === "/notificacoes") return "nada passa despercebido";
-  if (p === "/criar") return "junte duas e comece";
+  if (p === "/criar") return "em dupla ou de galera";
   if (p.startsWith("/prayer/")) return "gente de fé se encontra";
   if (p === "/cadastro") return "bem-vindo à rede";
   if (p === "/admin") return "os números da plataforma";

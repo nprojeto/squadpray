@@ -17,6 +17,20 @@ const eInicio = ref<string | null>(null);
 const eFim = ref<string | null>(null);
 
 const semanal = computed(() => ehSemanal(tipo.value));
+
+const coresTipo: Record<string, string> = {
+  oracao: "bg-amarelo text-tinta",
+  leitura_biblica: "bg-roxo text-tinta",
+  devocional: "bg-laranja text-papel",
+  jejum: "bg-rosa text-papel",
+  livros: "bg-verde text-papel",
+  celebracao: "bg-amarelo text-tinta",
+  gdc: "bg-roxo text-tinta",
+};
+
+const ordemTipos: TipoSquad[] = [
+  "oracao", "leitura_biblica", "devocional", "jejum", "livros", "celebracao", "gdc",
+];
 const inicioReal = computed(() => (semanal.value ? proximaSegunda(new Date(inicio.value + "T12:00:00")) : inicio.value));
 
 const totalPeriodos = computed(() => {
@@ -90,15 +104,21 @@ async function criar() {
     <form v-else novalidate class="painel p-7 mt-8 space-y-6" @submit.prevent="criar">
       <div>
         <label for="tipo">O que este squad vai fazer</label>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div class="space-y-2">
           <button
-            v-for="(t, k) in TIPOS_SQUAD" :key="k" type="button"
-            class="rounded-xl border px-3 py-3 text-left transition"
-            :class="tipo === k ? 'border-ouro bg-amarelo' : 'border-tinta bg-papel hover:border-laranja'"
-            @click="tipo = k as TipoSquad"
+            v-for="(k, i) in ordemTipos" :key="k" type="button"
+            class="w-full flex items-center justify-between gap-3 border-2 border-tinta
+                   px-4 py-2.5 transition"
+            :class="[
+              tipo === k ? `${coresTipo[k]} shadow-blocoP` : 'bg-cartao text-fumaca hover:bg-amarelo/40',
+              i % 2 ? 'rotate-[.4deg]' : '-rotate-[.5deg]',
+            ]"
+            @click="tipo = k"
           >
-            <span class="block text-sm">{{ t.nome }}</span>
-            <span class="block text-[10px] uppercase tracking-wider text-fumaca mt-0.5 font-mono">{{ t.frequencia }}</span>
+            <span class="font-display text-xl sm:text-2xl uppercase">{{ TIPOS_SQUAD[k].nome }}</span>
+            <span class="font-bold text-[10px] sm:text-xs uppercase tracking-widest">
+              {{ TIPOS_SQUAD[k].frequencia }}
+            </span>
           </button>
         </div>
       </div>
@@ -159,7 +179,7 @@ async function criar() {
         {{ salvando ? "Criando…" : "Criar squad e convidar pessoas" }}
       </button>
       <p class="text-xs text-fumaca text-center font-semibold">
-        Mínimo de 21 dias corridos. O card abre com 2 pessoas — pode ser um casal em propósito.
+        Mínimo de 21 dias corridos. O card abre com 2 pessoas.
       </p>
     </form>
   </div>
