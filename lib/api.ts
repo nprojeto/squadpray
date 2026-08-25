@@ -107,6 +107,17 @@ export const TIPOS_SQUAD: Record<TipoSquad, { nome: string; frequencia: string; 
   gdc:             { nome: "GDC",             frequencia: "semanal", verbo: "enviar a foto do GDC" },
 };
 
+export const EMOJI_REACAO: Record<string, string> = {
+  amem: "🙌",
+  oracao: "🙏",
+  cruz: "🔥",
+  pomba: "🕊️",
+  fogo: "🔥",
+  luz: "📖",
+  coroa: "👑",
+  semente: "🌱",
+};
+
 export const ehSemanal = (t: TipoSquad) => t === "celebracao" || t === "gdc";
 export const precisaObjetivo = (t: TipoSquad) => t === "oracao" || t === "jejum";
 

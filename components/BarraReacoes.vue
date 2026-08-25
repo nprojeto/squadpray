@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { EMOJI_REACAO } from "~/lib/api";
+
 const props = defineProps<{
   emojis: { codigo: string; nome: string; descricao?: string }[];
   reacoes: { emoji: string; user_id: string; profiles?: { nome: string } }[];
@@ -32,7 +34,7 @@ const contagem = computed(() => {
           : (contagem[e.codigo]?.length ? 'bg-roxo/45' : 'bg-cartao enabled:hover:bg-amarelo enabled:hover:shadow-blocoP')"
         @click="emit('reagir', e.codigo)"
       >
-        <EmojiCristao :codigo="e.codigo" :tamanho="24" />
+        <span class="text-xl leading-none" aria-hidden="true">{{ EMOJI_REACAO[e.codigo] ?? "✨" }}</span>
         <span class="text-xs font-bold uppercase">{{ e.nome }}</span>
         <span v-if="contagem[e.codigo]?.length" class="font-mono text-xs font-bold">
           {{ contagem[e.codigo].length }}

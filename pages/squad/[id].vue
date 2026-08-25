@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api, enviarImagem, TIPOS_SQUAD, dataBR, hojeISO } from "~/lib/api";
+import { api, enviarImagem, TIPOS_SQUAD, EMOJI_REACAO, dataBR, hojeISO } from "~/lib/api";
 
 const rota = useRoute();
 const id = rota.params.id as string;
@@ -549,7 +549,7 @@ function jaConfirmei(f: any) {
           <div class="flex items-center justify-between gap-3">
             <p class="rotulo">{{ p.profiles?.nome }} · {{ dataBR(p.created_at) }}</p>
             <div class="flex gap-1">
-              <EmojiCristao v-for="r in p.post_reactions" :key="r.id" :codigo="r.emoji" :tamanho="18" />
+              <span v-for="r in p.post_reactions" :key="r.id" class="text-base">{{ EMOJI_REACAO[r.emoji] ?? "✨" }}</span>
             </div>
           </div>
           <h3 v-if="p.titulo" class="text-xl mt-2">{{ p.titulo }}</h3>
