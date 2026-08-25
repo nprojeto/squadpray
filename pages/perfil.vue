@@ -90,9 +90,19 @@ async function salvar() {
         </div>
       </div>
 
-      <div class="chumbo mt-6 pt-5">
-        <span class="rotulo">pontos</span>
-        <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
+      <div class="chumbo mt-6 pt-5 grid grid-cols-2 gap-4">
+        <div>
+          <span class="rotulo">pontos</span>
+          <p class="font-display text-5xl mt-1">{{ Number(perfil?.pontos_total ?? 0).toFixed(1) }}</p>
+        </div>
+        <div>
+          <span class="rotulo">streak pessoal</span>
+          <p class="font-display text-5xl mt-1">{{ perfil?.streak_individual ?? 0 }}</p>
+          <p class="text-xs font-semibold text-fumaca">
+            recorde {{ perfil?.melhor_streak_individual ?? 0 }} ·
+            <span class="font-mono text-tinta">{{ perfil?.dias_cumpridos_total ?? 0 }}</span> dias cumpridos
+          </p>
+        </div>
       </div>
     </section>
 

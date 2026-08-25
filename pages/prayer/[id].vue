@@ -17,6 +17,10 @@ const abertos = computed(() =>
 const encerrados = computed(() =>
   (dados.value?.squads ?? []).filter((s: any) => !["rascunho", "ativo"].includes(s.status)));
 
+const base = useRuntimeConfig().app.baseURL;
+const imagem = (c: string) => `${base.replace(/\/$/, "")}/selos/${c}.png`;
+const conquistados = computed(() => (dados.value?.selos ?? []).filter((s: any) => s.conquistado));
+
 const redes = computed(() => ([
   { nome: "Instagram", url: linkRede("instagram", p.value?.instagram) },
   { nome: "Facebook", url: linkRede("facebook", p.value?.facebook) },
@@ -90,6 +94,15 @@ const redes = computed(() => ([
             </div>
           </div>
         </template>
+      </section>
+
+      <section v-if="!dados.restrito && conquistados.length" class="mt-6">
+        <span class="rotulo text-xl">conquistas</span>
+        <ul class="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
+          <li v-for="s in conquistados" :key="s.codigo">
+            <SeloConquista :selo="s" :imagem="imagem(s.codigo)" />
+          </li>
+        </ul>
       </section>
 
       <section v-if="!dados.restrito && abertos.length" class="mt-6">

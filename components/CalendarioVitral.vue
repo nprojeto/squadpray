@@ -4,7 +4,10 @@ import { dataBR, type Periodo } from "~/lib/api";
 const props = defineProps<{
   periodos: Periodo[]; streak: number; recorde: number;
   selo: boolean; semanal: boolean; pontos: number; meuId?: string;
+  meuStreak?: number; meusDias?: number;
 }>();
+
+const cumpridos = computed(() => props.periodos.filter((p) => p.status === "concluido").length);
 
 const hoje = new Date().toISOString().slice(0, 10);
 
@@ -38,6 +41,11 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
         <div class="flex flex-wrap gap-2 mt-4">
           <span class="faixa bg-roxo text-tinta text-sm">recorde {{ recorde }}</span>
           <span class="faixa bg-verde text-papel text-sm">{{ Number(pontos).toFixed(1) }} pts</span>
+          <span class="faixa bg-amarelo text-sm">
+            {{ cumpridos }}/{{ periodos.length }} {{ semanal ? 'encontros' : 'dias' }}
+          </span>
+          <span v-if="meuStreak" class="faixa bg-cartao text-sm">seu streak {{ meuStreak }}</span>
+          <span v-if="meusDias" class="faixa bg-cartao text-sm">você cumpriu {{ meusDias }}</span>
         </div>
       </div>
 

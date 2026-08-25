@@ -249,12 +249,21 @@ function jaConfirmei(f: any) {
           <span class="rotulo">Objetivo</span><br />{{ squad.objetivo }}
         </p>
       </div>
-      <div class="flex -space-x-2">
-        <AvatarPerfil
-          v-for="m in membros" :key="m.id"
-          :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="40"
-          :selo="squad.selo_dourado" :streak="squad.streak_atual"
-        />
+      <div class="flex flex-wrap gap-1.5 max-w-full">
+        <NuxtLink
+          v-for="m in membros" :key="m.id" :to="`/prayer/${m.profiles.id}`"
+          class="group relative block" :title="m.profiles.nome"
+        >
+          <AvatarPerfil
+            :url="m.profiles.avatar_url" :nome="m.profiles.nome" :tamanho="40"
+            :selo="squad.selo_dourado" :streak="squad.streak_atual"
+          />
+          <span
+            class="pointer-events-none absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden
+                   group-hover:block whitespace-nowrap rounded-md bg-tinta text-papel
+                   px-2.5 py-1.5 text-[11px] font-bold"
+          >{{ m.profiles.nome }}</span>
+        </NuxtLink>
       </div>
     </header>
 
@@ -364,7 +373,8 @@ function jaConfirmei(f: any) {
         class="mt-8"
         :periodos="periodos" :streak="squad.streak_atual" :recorde="squad.streak_recorde"
         :selo="squad.selo_dourado" :semanal="semanal" :pontos="squad.pontos_total"
-        :meu-id="perfil?.id"
+        :meu-id="perfil?.id" :meu-streak="perfil?.streak_individual ?? 0"
+        :meus-dias="dados.meus_dias ?? 0"
       />
 
       <nav class="flex gap-1 mt-8 border-b border-tinta overflow-x-auto">

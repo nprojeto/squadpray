@@ -30,6 +30,10 @@ const cor = computed(() => cores[props.squad.tipo] ?? "bg-amarelo");
         </span>
       </div>
       <div class="text-right text-xs font-semibold text-fumaca">
+        <p v-if="squad.total_periodos">
+          <span class="font-mono text-tinta">{{ squad.periodos_concluidos }}/{{ squad.total_periodos }}</span>
+          cumpridos
+        </p>
         <p>{{ squad.qtd_membros }} {{ squad.qtd_membros === 1 ? "pessoa" : "pessoas" }}</p>
         <p class="font-mono text-tinta">{{ Number(squad.pontos_total).toFixed(1) }} pts</p>
       </div>

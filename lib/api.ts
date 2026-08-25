@@ -77,6 +77,7 @@ export interface Perfil {
   id: string; nome: string; email: string; avatar_url?: string;
   bio?: string; timezone: string; pontos_total: number;
   igreja?: string; ministerios?: string; data_nascimento?: string;
+  streak_individual?: number; melhor_streak_individual?: number; dias_cumpridos_total?: number;
   admin?: boolean; senha_provisoria?: boolean;
   instagram?: string; facebook?: string; tiktok?: string; youtube?: string;
   perfil_publico?: boolean;
@@ -183,7 +184,7 @@ export const api = {
   excluirSquad: (id: string) => chamar(`/squads/${id}`, { metodo: "DELETE" }),
   votarExclusao: (id: string, aprovado: boolean) =>
     chamar(`/squads/${id}/exclusao/votar`, { metodo: "POST", corpo: { aprovado } }),
-  conquistas: () => chamar("/conquistas"),
+  conquistas: (de?: string) => chamar(`/conquistas${de ? `?de=${de}` : ""}`),
   explorar: () => chamar("/explorar"),
   solicitarEntrada: (id: string, mensagem?: string) =>
     chamar(`/squads/${id}/solicitar`, { metodo: "POST", corpo: { mensagem } }),

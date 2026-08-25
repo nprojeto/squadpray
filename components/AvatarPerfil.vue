@@ -10,7 +10,10 @@ const marca = computed(() => Math.max(16, Math.round(props.tamanho * 0.42)));
 </script>
 
 <template>
-  <span class="relative inline-block shrink-0" :style="{ width: tamanho + 'px', height: tamanho + 'px' }">
+  <span
+    class="relative inline-block shrink-0 rounded-full overflow-visible"
+    :style="{ width: tamanho + 'px', height: tamanho + 'px', minWidth: tamanho + 'px', minHeight: tamanho + 'px' }"
+  >
     <img
       v-if="url" :src="url" :alt="nome ? `Foto de ${nome}` : 'Foto de perfil'"
       class="w-full h-full object-cover rounded-full border-2 border-tinta"

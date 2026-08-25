@@ -347,8 +347,13 @@ Deno.serve(async (req) => {
           .select("*, exclusao_votos(user_id, aprovado), profiles:solicitado_por(nome)")
           .eq("squad_id", squadId).eq("status", "pendente").maybeSingle();
 
+        const { count: meusDiasSquad } = await db.from("dias_cumpridos")
+          .select("*", { count: "exact", head: true })
+          .eq("squad_id", squadId).eq("user_id", user.id);
+
         return ok({
           squad, membros: membros ?? [], periodos: periodos ?? [],
+          meus_dias: meusDiasSquad ?? 0,
           posts: posts ?? [], fotos: fotos ?? [], convites: convites ?? [],
           exclusao: exclusao ?? null,
           semanal: SEMANAIS.includes(squad?.tipo),
@@ -533,12 +538,17 @@ Deno.serve(async (req) => {
         const { data: periodos } = await db.from("squad_periods")
           .select("id, indice, data_inicio, data_fim, status, pontos, autor_id, profiles:autor_id(nome, avatar_url)")
           .eq("squad_id", squadId).order("indice");
+
+        const { count: meusDias } = await db.from("dias_cumpridos")
+          .select("*", { count: "exact", head: true })
+          .eq("squad_id", squadId).eq("user_id", user.id);
         return ok({
           streak_atual: squad?.streak_atual ?? 0,
           streak_recorde: squad?.streak_recorde ?? 0,
           selo_dourado: squad?.selo_dourado ?? false,
           pontos_total: squad?.pontos_total ?? 0,
           valor_periodo: squad?.valor_periodo ?? 0,
+          meus_dias: meusDias ?? 0,
           periodos: periodos ?? [],
         });
       }
@@ -771,10 +781,25 @@ Deno.serve(async (req) => {
 
     // ============ CONQUISTAS ============
     if (seg[0] === "conquistas" && metodo === "GET") {
+      const alvo = url.searchParams.get("de") ?? user.id;
+
+      if (alvo !== user.id) {
+        const { data: eu } = await db.from("profiles")
+          .select("perfil_publico").eq("id", user.id).maybeSingle();
+        const { data: dele } = await db.from("profiles")
+          .select("perfil_publico").eq("id", alvo).maybeSingle();
+        if (!dele) return erro("Prayer não encontrado.", 404);
+        if (eu?.perfil_publico === false || dele.perfil_publico === false) {
+          return erro("As conquistas só aparecem quando os dois perfis estão visíveis.", 403);
+        }
+      } else {
+        await db.rpc("conceder_conquistas", { p_user: user.id });
+      }
+
       const { data: catalogo } = await db.from("conquistas")
         .select("*").eq("ativo", true).order("ordem");
       const { data: minhas } = await db.from("conquistas_usuario")
-        .select("codigo, conquistado_em").eq("user_id", user.id);
+        .select("codigo, conquistado_em").eq("user_id", alvo);
 
       const mapa = new Map((minhas ?? []).map((m: any) => [m.codigo, m.conquistado_em]));
       const selos = (catalogo ?? []).map((c: any) => ({
@@ -783,11 +808,7 @@ Deno.serve(async (req) => {
         conquistado_em: mapa.get(c.codigo) ?? null,
       }));
 
-      return ok({
-        selos,
-        total: selos.length,
-        conquistados: selos.filter((s: any) => s.conquistado).length,
-      });
+      return ok({ selos });
     }
 
     // ============ EXPLORAR ============
@@ -978,7 +999,18 @@ Deno.serve(async (req) => {
         squads = data ?? [];
       }
 
-      return ok({ restrito: false, prayer: p, squads });
+      const { data: catalogo } = await db.from("conquistas")
+        .select("*").eq("ativo", true).order("ordem");
+      const { data: dele } = await db.from("conquistas_usuario")
+        .select("codigo, conquistado_em").eq("user_id", alvo);
+      const mapaC = new Map((dele ?? []).map((m: any) => [m.codigo, m.conquistado_em]));
+      const selos = (catalogo ?? []).map((c: any) => ({
+        ...c,
+        conquistado: mapaC.has(c.codigo),
+        conquistado_em: mapaC.get(c.codigo) ?? null,
+      }));
+
+      return ok({ restrito: false, prayer: p, squads, selos });
     }
 
     // ============ HISTÓRICO ============
