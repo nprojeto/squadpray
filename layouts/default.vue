@@ -35,7 +35,7 @@ const links = computed(() => [
   { para: "/explorar", texto: "Explorar", contador: 0 },
   { para: "/rede", texto: "Rede", contador: 0 },
   { para: "/convites", texto: "Convites", contador: convitesPendentes.value },
-  { para: "/conquistas", texto: "Minhas conquistas", contador: 0 },
+  { para: "/conquistas", texto: "Conquistas", contador: 0 },
   { para: "/historico", texto: "Histórico", contador: 0 },
   ...(ehAdmin.value ? [{ para: "/admin", texto: "Painel admin", contador: 0 }] : []),
 ]);
@@ -73,7 +73,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
-          <NuxtLink v-for="l in links.slice(0, 4)" :key="l.para" :to="l.para" class="btn-fantasma relative">
+          <NuxtLink v-for="l in links.slice(0, 5)" :key="l.para" :to="l.para" class="btn-fantasma relative">
             {{ l.texto }}
             <span
               v-if="l.contador"
@@ -108,7 +108,6 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
-              <NuxtLink to="/conquistas" class="btn-fantasma w-full justify-start">Minhas conquistas</NuxtLink>
               <NuxtLink to="/historico" class="btn-fantasma w-full justify-start">Histórico</NuxtLink>
               <NuxtLink v-if="ehAdmin" to="/admin" class="btn-fantasma w-full justify-start">Painel admin</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click.stop="alternar">

@@ -183,6 +183,7 @@ export const api = {
   excluirSquad: (id: string) => chamar(`/squads/${id}`, { metodo: "DELETE" }),
   votarExclusao: (id: string, aprovado: boolean) =>
     chamar(`/squads/${id}/exclusao/votar`, { metodo: "POST", corpo: { aprovado } }),
+  conquistas: () => chamar("/conquistas"),
   explorar: () => chamar("/explorar"),
   solicitarEntrada: (id: string, mensagem?: string) =>
     chamar(`/squads/${id}/solicitar`, { metodo: "POST", corpo: { mensagem } }),

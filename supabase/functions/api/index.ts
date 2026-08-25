@@ -769,6 +769,27 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ============ CONQUISTAS ============
+    if (seg[0] === "conquistas" && metodo === "GET") {
+      const { data: catalogo } = await db.from("conquistas")
+        .select("*").eq("ativo", true).order("ordem");
+      const { data: minhas } = await db.from("conquistas_usuario")
+        .select("codigo, conquistado_em").eq("user_id", user.id);
+
+      const mapa = new Map((minhas ?? []).map((m: any) => [m.codigo, m.conquistado_em]));
+      const selos = (catalogo ?? []).map((c: any) => ({
+        ...c,
+        conquistado: mapa.has(c.codigo),
+        conquistado_em: mapa.get(c.codigo) ?? null,
+      }));
+
+      return ok({
+        selos,
+        total: selos.length,
+        conquistados: selos.filter((s: any) => s.conquistado).length,
+      });
+    }
+
     // ============ EXPLORAR ============
     if (seg[0] === "explorar" && metodo === "GET") {
       const { data, error } = await db.rpc("explorar_squads");
