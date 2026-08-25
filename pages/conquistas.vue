@@ -86,8 +86,8 @@ const imagem = (codigo: string) => `${base.replace(/\/$/, "")}/selos/${codigo}.p
           <div v-else class="w-full h-full relative">
             <img
               :src="imagem(s.codigo)" alt=""
-              class="w-full h-full object-contain opacity-100"
-              style="filter: grayscale(1) brightness(0) opacity(.12);"
+              class="w-full h-full object-contain"
+              style="filter: grayscale(1) brightness(0); opacity: .13;"
             />
             <span class="absolute inset-0 grid place-items-center">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
