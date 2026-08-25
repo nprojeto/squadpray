@@ -1,17 +1,30 @@
 <script setup lang="ts">
 import { api, TIPOS_SQUAD, dataBR } from "~/lib/api";
 
-const paraMim = ref<any[]>([]);
+const paraMim = ref<any[]>([]); const pedidos = ref<any[]>([]);
 const carregando = ref(true); const erro = ref<string | null>(null); const aviso = ref<string | null>(null);
 const { carregar } = useSessao();
 
 async function buscar() {
   carregando.value = true;
-  try { const r: any = await api.convites(); paraMim.value = r.para_mim ?? []; }
+  try {
+    const r: any = await api.convites();
+    paraMim.value = r.para_mim ?? [];
+    pedidos.value = r.pedidos ?? [];
+  }
   catch (e: any) { erro.value = e.message; }
   finally { carregando.value = false; }
 }
 onMounted(buscar);
+
+async function responderPedido(id: string, aprovado: boolean) {
+  erro.value = null;
+  try {
+    await api.responderSolicitacao(id, aprovado);
+    aviso.value = aprovado ? "Pessoa adicionada ao squad." : "Pedido recusado.";
+    await buscar(); await carregar();
+  } catch (e: any) { erro.value = e.message; }
+}
 
 async function responder(id: string, aceitar: boolean) {
   erro.value = null;
@@ -35,6 +48,28 @@ async function responder(id: string, aceitar: boolean) {
     <p v-if="carregando" class="text-fumaca mt-8">Carregando…</p>
 
     <template v-else>
+      <section v-if="pedidos.length" class="mt-8">
+        <p class="rotulo mb-3">Querem entrar no seu squad</p>
+        <div v-for="p in pedidos" :key="p.id" class="painel p-6 mb-3">
+          <div class="flex items-center gap-3">
+            <AvatarPerfil :url="p.profiles?.avatar_url" :nome="p.profiles?.nome" :tamanho="44" />
+            <div class="min-w-0">
+              <p class="font-display text-xl truncate">{{ p.profiles?.nome }}</p>
+              <p v-if="p.profiles?.igreja" class="text-xs font-semibold text-fumaca truncate">
+                {{ p.profiles.igreja }}
+              </p>
+            </div>
+          </div>
+          <p class="text-sm font-semibold mt-3">
+            Quer entrar em <span class="bg-amarelo px-1">{{ p.squads?.nome }}</span>.
+          </p>
+          <div class="flex gap-3 mt-5">
+            <button class="btn-ouro flex-1" @click="responderPedido(p.id, true)">Aceitar</button>
+            <button class="btn-fantasma" @click="responderPedido(p.id, false)">Recusar</button>
+          </div>
+        </div>
+      </section>
+
       <section class="mt-8">
         <p class="rotulo mb-3">Convites para você</p>
         <div v-if="!paraMim.length" class="painel p-6 text-fumaca text-sm">Nenhum convite no momento.</div>

@@ -137,7 +137,16 @@ Deno.serve(async (req) => {
           admin: perfil?.admin === true,
           senha_provisoria: perfil?.senha_provisoria === true,
           notificacoes_nao_lidas: naoLidas ?? 0,
-          convites_pendentes: convParaMim?.length ?? 0,
+          convites_pendentes: (convParaMim?.length ?? 0) + (await (async () => {
+            const { data: meusSq } = await db.from("squads")
+              .select("id").eq("criado_por", user.id).in("status", ["rascunho", "ativo"]);
+            const ids = (meusSq ?? []).map((x: any) => x.id);
+            if (!ids.length) return 0;
+            const { count } = await db.from("solicitacoes")
+              .select("*", { count: "exact", head: true })
+              .in("squad_id", ids).eq("status", "pendente");
+            return count ?? 0;
+          })()),
         });
       }
       if (metodo === "PATCH") {
@@ -675,7 +684,17 @@ Deno.serve(async (req) => {
           .or(`user_id.eq.${user.id},email.ilike.${email}`)
           .eq("status", "pendente");
 
-        return ok({ para_mim: paraMim ?? [], para_aprovar: [] });
+        const { data: meusSquads } = await db.from("squads")
+          .select("id").eq("criado_por", user.id).in("status", ["rascunho", "ativo"]);
+        const idsMeus = (meusSquads ?? []).map((s: any) => s.id);
+        let pedidos: any[] = [];
+        if (idsMeus.length) {
+          const { data } = await db.from("solicitacoes")
+            .select("*, squads(id, nome, tipo), profiles:user_id(id, nome, avatar_url, igreja)")
+            .in("squad_id", idsMeus).eq("status", "pendente");
+          pedidos = data ?? [];
+        }
+        return ok({ para_mim: paraMim ?? [], para_aprovar: [], pedidos });
       }
 
       const conviteId = seg[1];
@@ -748,6 +767,102 @@ Deno.serve(async (req) => {
         }
         return ok({ status: final?.status });
       }
+    }
+
+    // ============ EXPLORAR ============
+    if (seg[0] === "explorar" && metodo === "GET") {
+      const { data, error } = await db.rpc("explorar_squads");
+      if (error) return erro(error.message);
+
+      const { data: meus } = await db.from("squad_members")
+        .select("squad_id").eq("user_id", user.id).eq("status", "ativo");
+      const meusIds = (meus ?? []).map((m: any) => m.squad_id);
+
+      const { data: pedidos } = await db.from("solicitacoes")
+        .select("squad_id, status").eq("user_id", user.id);
+
+      const squads = (data ?? []).map((sq: any) => ({
+        ...sq,
+        sou_membro: meusIds.includes(sq.id),
+        meu_pedido: pedidos?.find((p: any) => p.squad_id === sq.id)?.status ?? null,
+      }));
+
+      const abertos = (await db.from("squad_members")
+        .select("squad_id, squads(status, criado_por)")
+        .eq("user_id", user.id).eq("status", "ativo")).data ?? [];
+      const comoConvidado = abertos.filter((v: any) =>
+        v.squads && v.squads.criado_por !== user.id &&
+        ["rascunho", "ativo"].includes(v.squads.status)).length;
+
+      return ok({ squads, vagas_convidado: Math.max(0, 2 - comoConvidado) });
+    }
+
+    // POST /squads/:id/solicitar
+    if (seg[0] === "squads" && seg[2] === "solicitar" && metodo === "POST") {
+      const squadId = seg[1];
+      const { data: squad } = await db.from("squads").select("*").eq("id", squadId).single();
+      if (!squad) return erro("Squad não encontrado.", 404);
+      if (squad.status !== "rascunho") {
+        return erro("Este squad já começou o ciclo e não recebe mais gente.");
+      }
+
+      const { data: jaSou } = await db.from("squad_members").select("id")
+        .eq("squad_id", squadId).eq("user_id", user.id).eq("status", "ativo").maybeSingle();
+      if (jaSou) return erro("Você já participa deste squad.");
+
+      const abertos = (await db.from("squad_members")
+        .select("squad_id, squads(status, criado_por)")
+        .eq("user_id", user.id).eq("status", "ativo")).data ?? [];
+      const comoConvidado = abertos.filter((v: any) =>
+        v.squads && v.squads.criado_por !== user.id &&
+        ["rascunho", "ativo"].includes(v.squads.status)).length;
+      if (comoConvidado >= 2) {
+        return erro("Você já está em dois squads de outras pessoas. Espere um deles terminar.");
+      }
+
+      const { data: pedido, error } = await db.from("solicitacoes").insert({
+        squad_id: squadId, user_id: user.id, mensagem: body.mensagem ?? null,
+      }).select().single();
+      if (error) {
+        return erro(error.message.includes("duplicate")
+          ? "Você já pediu para entrar neste squad. Aguarde a resposta."
+          : error.message);
+      }
+
+      const { data: eu } = await db.from("profiles").select("nome").eq("id", user.id).maybeSingle();
+      await notificar(db, [squad.criado_por], "Pedido para entrar no squad",
+        `${eu?.nome ?? "Alguém"} quer entrar em ${squad.nome}.`, "/convites");
+
+      return ok({ pedido }, 201);
+    }
+
+    // POST /solicitacoes/:id/responder { aprovado }
+    if (seg[0] === "solicitacoes" && seg[1] && seg[2] === "responder" && metodo === "POST") {
+      const { data: pedido } = await db.from("solicitacoes")
+        .select("*, squads(nome, criado_por, status)").eq("id", seg[1]).maybeSingle();
+      if (!pedido) return erro("Pedido não encontrado.", 404);
+      if (pedido.squads.criado_por !== user.id) {
+        return erro("Só quem criou o squad responde os pedidos.", 403);
+      }
+      if (pedido.status !== "pendente") return erro("Este pedido já foi respondido.");
+
+      const aprovado = body.aprovado !== false;
+      if (aprovado && pedido.squads.status !== "rascunho") {
+        return erro("O ciclo já começou. Não dá para incluir gente agora.");
+      }
+
+      const { error } = await db.from("solicitacoes")
+        .update({ status: aprovado ? "aprovado" : "recusado" }).eq("id", seg[1]);
+      if (error) return erro(error.message);
+
+      await notificar(db, [pedido.user_id],
+        aprovado ? "Pedido aprovado" : "Pedido recusado",
+        aprovado
+          ? `Você entrou no squad ${pedido.squads.nome}.`
+          : `Seu pedido para entrar em ${pedido.squads.nome} não foi aceito desta vez.`,
+        aprovado ? `/squad/${pedido.squad_id}` : "/explorar");
+
+      return ok({ status: aprovado ? "aprovado" : "recusado" });
     }
 
     // ============ REDE ============

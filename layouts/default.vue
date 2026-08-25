@@ -24,14 +24,18 @@ const recado = computed(() => {
   if (p.startsWith("/prayer/")) return "gente de fé se encontra";
   if (p === "/cadastro") return "bem-vindo à rede";
   if (p === "/admin") return "os números da plataforma";
+  if (p === "/explorar") return "tem gente começando agora";
+  if (p === "/conquistas") return "o que vocês ergueram juntos";
   if (p === "/nova-senha") return "só mais um passo";
   return "fé que se pratica em grupo";
 });
 
 const links = computed(() => [
   { para: "/painel", texto: "Meus squads", contador: 0 },
+  { para: "/explorar", texto: "Explorar", contador: 0 },
   { para: "/rede", texto: "Rede", contador: 0 },
   { para: "/convites", texto: "Convites", contador: convitesPendentes.value },
+  { para: "/conquistas", texto: "Minhas conquistas", contador: 0 },
   { para: "/historico", texto: "Histórico", contador: 0 },
   ...(ehAdmin.value ? [{ para: "/admin", texto: "Painel admin", contador: 0 }] : []),
 ]);
@@ -69,7 +73,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
-          <NuxtLink v-for="l in links" :key="l.para" :to="l.para" class="btn-fantasma relative">
+          <NuxtLink v-for="l in links.slice(0, 4)" :key="l.para" :to="l.para" class="btn-fantasma relative">
             {{ l.texto }}
             <span
               v-if="l.contador"
