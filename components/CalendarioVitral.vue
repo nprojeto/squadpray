@@ -3,7 +3,7 @@ import { dataBR, type Periodo } from "~/lib/api";
 
 const props = defineProps<{
   periodos: Periodo[]; streak: number; recorde: number;
-  selo: boolean; semanal: boolean; pontos: number;
+  selo: boolean; semanal: boolean; pontos: number; meuId?: string;
 }>();
 
 const hoje = new Date().toISOString().slice(0, 10);
@@ -11,10 +11,15 @@ const hoje = new Date().toISOString().slice(0, 10);
 function estado(p: Periodo) {
   if (p.status === "concluido") return "feito";
   if (p.status === "falhou") return "perdido";
-  if (p.data_inicio <= hoje && hoje <= p.data_fim) return "agora";
   if (p.data_fim < hoje) return "perdido";
+  if (props.meuId && p.autor_id === props.meuId) return "minhaVez";
   return "espera";
 }
+
+const ehHoje = (p: Periodo) => p.data_inicio <= hoje && hoje <= p.data_fim;
+
+const minhasDatas = computed(() =>
+  props.periodos.filter((p) => props.meuId && p.autor_id === props.meuId && p.data_fim >= hoje));
 
 const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
 </script>
@@ -50,17 +55,25 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
     </div>
 
     <div class="mt-7 chumbo pt-6">
-      <span class="rotulo">{{ semanal ? 'semanas do ciclo' : 'dias do ciclo' }}</span>
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <span class="rotulo">{{ semanal ? 'semanas do ciclo' : 'dias do ciclo' }}</span>
+        <span v-if="minhasDatas.length" class="font-marca text-lg text-roxo">
+          você escreve em {{ minhasDatas.map(d => dataBR(d.data_inicio).slice(0, 5)).slice(0, 4).join(', ') }}<template v-if="minhasDatas.length > 4">…</template>
+        </span>
+      </div>
       <div class="grid gap-1.5 mt-3" :class="semanal ? 'grid-cols-6 sm:grid-cols-10' : 'grid-cols-7 sm:grid-cols-14'">
         <div
           v-for="p in periodos" :key="p.id"
           class="group relative aspect-square rounded-md border-2 border-tinta transition-all"
-          :class="{
-            'bg-amarelo shadow-blocoP animate-colar': estado(p) === 'feito',
-            'bg-laranja/25 border-dashed': estado(p) === 'perdido',
-            'bg-roxo shadow-blocoP': estado(p) === 'agora',
-            'bg-papel border-risco': estado(p) === 'espera',
-          }"
+          :class="[
+            {
+              'bg-amarelo shadow-blocoP animate-colar': estado(p) === 'feito',
+              'bg-laranja/25 border-dashed': estado(p) === 'perdido',
+              'bg-roxo shadow-blocoP': estado(p) === 'minhaVez',
+              'bg-papel border-risco': estado(p) === 'espera',
+            },
+            ehHoje(p) ? 'ring-2 ring-offset-2 ring-tinta ring-offset-cartao' : '',
+          ]"
         >
           <span
             class="absolute inset-0 grid place-items-center font-mono text-[10px] font-bold"
@@ -80,7 +93,8 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
 
       <div class="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-xs font-semibold">
         <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-amarelo border-2 border-tinta inline-block" /> cumprido</span>
-        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-roxo border-2 border-tinta inline-block" /> em aberto</span>
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-roxo border-2 border-tinta inline-block" /> minha vez</span>
+        <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-papel border-2 border-tinta ring-2 ring-tinta ring-offset-1 ring-offset-cartao inline-block" /> hoje</span>
         <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-laranja/25 border-2 border-dashed border-tinta inline-block" /> perdido</span>
         <span class="flex items-center gap-1.5"><i class="w-3.5 h-3.5 rounded-sm bg-papel border-2 border-risco inline-block" /> a vir</span>
       </div>

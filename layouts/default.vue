@@ -108,6 +108,8 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
               <p class="px-3 py-2 font-bold text-sm truncate">{{ perfil?.nome }}</p>
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
+              <NuxtLink to="/conquistas" class="btn-fantasma w-full justify-start">Minhas conquistas</NuxtLink>
+              <NuxtLink to="/historico" class="btn-fantasma w-full justify-start">Histórico</NuxtLink>
               <NuxtLink v-if="ehAdmin" to="/admin" class="btn-fantasma w-full justify-start">Painel admin</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click.stop="alternar">
                 {{ escuro ? "☀ Tema claro" : "☾ Tema escuro" }}

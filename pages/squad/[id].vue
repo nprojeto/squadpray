@@ -364,6 +364,7 @@ function jaConfirmei(f: any) {
         class="mt-8"
         :periodos="periodos" :streak="squad.streak_atual" :recorde="squad.streak_recorde"
         :selo="squad.selo_dourado" :semanal="semanal" :pontos="squad.pontos_total"
+        :meu-id="perfil?.id"
       />
 
       <nav class="flex gap-1 mt-8 border-b border-tinta overflow-x-auto">
