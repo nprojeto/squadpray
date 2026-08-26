@@ -55,9 +55,11 @@ const emFoco = computed(() => destaque.value === props.selo.codigo);
                justify-center text-center overflow-hidden"
         style="transform: rotateY(180deg)"
       >
-        <span class="rotulo text-base">como conquistar</span>
+        <span class="rotulo text-base">
+          {{ selo.conquistado ? 'como conquistou' : 'como conquistar' }}
+        </span>
         <span class="block font-bold text-[11px] sm:text-xs mt-2 leading-snug break-words">
-          {{ selo.regra }}
+          {{ selo.conquistado ? (selo.regra_feita || selo.regra) : selo.regra }}
         </span>
         <span class="block font-marca text-base mt-3"
               :class="selo.conquistado ? 'text-verde' : 'text-fumaca'">

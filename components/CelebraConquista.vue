@@ -91,7 +91,7 @@ async function receber() {
 
         <h2 class="text-3xl mt-2 leading-tight">{{ atual.titulo }}</h2>
         <p class="font-semibold text-sm mt-2">{{ atual.sub || atual.frase }}</p>
-        <p class="font-marca text-lg text-laranja mt-3">{{ atual.regra }}</p>
+        <p class="font-marca text-lg text-laranja mt-3">{{ atual.regra_feita || atual.regra }}</p>
 
         <button class="btn-ouro w-full mt-6" :disabled="voando" @click="receber">
           {{ voando ? "Guardando…" : "Recebi!" }}
