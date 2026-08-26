@@ -7,11 +7,33 @@ const atual = computed(() => pendentes.value[0] ?? null);
 const cartao = ref<HTMLElement | null>(null);
 const voando = ref(false);
 
+const rota = useRoute();
+const pronto = ref(false);
+
 onMounted(() => { verificar(); });
 
-watch(atual, (v) => {
-  if (import.meta.client) document.body.style.overflow = v ? "hidden" : "";
-});
+// leva o fundo para a tela de conquistas e centraliza o lugar do selo
+watch(atual, async (v) => {
+  if (!import.meta.client) return;
+  document.body.style.overflow = v ? "hidden" : "";
+  pronto.value = false;
+  if (!v) return;
+
+  if (rota.path !== "/conquistas") {
+    await navigateTo("/conquistas");
+    await new Promise((r) => setTimeout(r, 700));
+  } else {
+    await nextTick();
+  }
+
+  const alvo = document.querySelector(`[data-selo="${v.codigo}"]`);
+  if (alvo) {
+    document.body.style.overflow = "";
+    alvo.scrollIntoView({ block: "center", behavior: "auto" });
+    document.body.style.overflow = "hidden";
+  }
+  pronto.value = true;
+}, { immediate: true });
 onUnmounted(() => { if (import.meta.client) document.body.style.overflow = ""; });
 
 async function receber() {
@@ -55,7 +77,7 @@ async function receber() {
         ref="cartao"
         class="relative w-full max-w-xs painel p-6 text-center [transform-style:preserve-3d] animate-colar"
       >
-        <p class="rotulo text-xl">conquista nova!</p>
+        <p class="rotulo text-xl">você conquistou o selo</p>
 
         <div class="flex items-center justify-center gap-1 mt-3">
           <svg v-for="i in atual.estrelas" :key="i" width="18" height="18" viewBox="0 0 24 24"
@@ -67,7 +89,7 @@ async function receber() {
 
         <img :src="imagem(atual.codigo)" :alt="atual.titulo" class="w-full max-w-[220px] mx-auto mt-3" />
 
-        <h2 class="text-3xl mt-2">{{ atual.titulo }}</h2>
+        <h2 class="text-3xl mt-2 leading-tight">{{ atual.titulo }}</h2>
         <p class="font-semibold text-sm mt-2">{{ atual.sub || atual.frase }}</p>
         <p class="font-marca text-lg text-laranja mt-3">{{ atual.regra }}</p>
 

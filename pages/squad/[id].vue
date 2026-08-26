@@ -598,19 +598,89 @@ function jaConfirmei(f: any) {
         </template>
       </section>
 
-      <!-- HISTÓRICO -->
+      <!-- ARTIGOS -->
       <section v-if="aba === 'historico'" class="mt-8 space-y-4">
-        <article v-for="p in dados.posts" :key="p.id" class="painel p-6">
-          <div class="flex items-center justify-between gap-3">
-            <p class="rotulo">{{ p.profiles?.nome }} · {{ dataBR(p.created_at) }}</p>
-            <div class="flex gap-1">
-              <span v-for="r in p.post_reactions" :key="r.id" class="text-base">{{ EMOJI_REACAO[r.emoji] ?? "✨" }}</span>
+        <article v-for="p in dados.posts" :key="p.id" class="painel overflow-hidden">
+          <div class="p-6">
+            <div class="flex items-start justify-between gap-3 flex-wrap">
+              <div class="min-w-0">
+                <p class="rotulo">{{ p.profiles?.nome }} · {{ dataBR(p.created_at) }}</p>
+                <h3 class="text-2xl mt-1 break-words">
+                  {{ p.titulo || p.referencia || 'Artigo do dia' }}
+                </h3>
+              </div>
+              <button class="btn-vidro !py-2 !px-4 text-xs shrink-0" @click="alternarArtigo(p.id)">
+                {{ abertoId === p.id ? 'Fechar' : 'Ver tudo' }}
+              </button>
+            </div>
+
+            <p v-if="abertoId !== p.id" class="font-semibold text-sm mt-3 leading-relaxed">
+              {{ resumo(p.conteudo) }}
+            </p>
+
+            <div class="flex items-center gap-2 mt-4 flex-wrap">
+              <div class="flex -space-x-1.5">
+                <span
+                  v-for="r in p.post_reactions" :key="r.id"
+                  class="w-7 h-7 rounded-full bg-cartao border-2 border-tinta grid place-items-center text-sm"
+                  :title="r.profiles?.nome"
+                >{{ EMOJI_REACAO[r.emoji] ?? "✨" }}</span>
+              </div>
+              <span class="font-marca text-lg text-laranja">
+                {{ p.post_reactions?.length ?? 0 }} de {{ membros.length - 1 }} leram
+              </span>
             </div>
           </div>
-          <h3 v-if="p.titulo" class="text-xl mt-2">{{ p.titulo }}</h3>
-          <p class="text-fumaca text-sm mt-3 leading-relaxed whitespace-pre-line line-clamp-6">{{ p.conteudo }}</p>
+
+          <div v-if="abertoId === p.id" class="px-6 pb-6">
+            <div class="chumbo pt-5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="rotulo">
+                  <template v-if="periodoDoPost(p)">
+                    {{ semanal ? 'Semana' : 'Dia' }} {{ periodoDoPost(p).indice }}
+                    de {{ squad.total_periodos }} ·
+                  </template>
+                  {{ dataBR(p.created_at) }}
+                </span>
+                <span class="text-sm font-semibold">
+                  Escala: <span class="text-laranja">{{ p.profiles?.nome }}</span>
+                </span>
+              </div>
+
+              <h3 v-if="p.titulo" class="text-2xl mt-3">{{ p.titulo }}</h3>
+              <p class="rotulo mt-1">
+                {{ p.profiles?.nome }}<template v-if="p.referencia"> · {{ p.referencia }}</template>
+              </p>
+
+              <p class="mt-4 leading-relaxed whitespace-pre-line">{{ p.conteudo }}</p>
+            </div>
+
+            <div class="chumbo mt-6 pt-5">
+              <BarraReacoes
+                :emojis="emojis" :reacoes="p.post_reactions ?? []"
+                :meu-id="perfil?.id ?? ''" :sou-autor="p.autor_id === perfil?.id"
+                @reagir="(c) => reagirEm(p.id, c)"
+              />
+
+              <p v-if="quemLeu(p).length" class="font-marca text-lg text-fumaca mt-3">
+                leram: {{ quemLeu(p).join(', ') }}
+              </p>
+
+              <div v-if="quemFalta(p).length" class="mt-3">
+                <p class="text-xs font-semibold text-fumaca">
+                  Faltam <span class="font-mono text-tinta">{{ quemFalta(p).length }}</span>
+                  {{ quemFalta(p).length === 1 ? 'reação' : 'reações' }}:
+                </p>
+                <p class="font-marca text-lg text-laranja mt-1">{{ quemFalta(p).join(', ') }}</p>
+              </div>
+              <p v-else class="font-marca text-lg text-verde mt-3">todo mundo já reagiu</p>
+            </div>
+          </div>
         </article>
-        <p v-if="!dados.posts?.length" class="text-fumaca">Nenhum artigo publicado ainda.</p>
+
+        <p v-if="!dados.posts?.length" class="painel p-8 text-center font-semibold">
+          Nenhum artigo publicado ainda.
+        </p>
       </section>
 
       <!-- GALERIA -->
