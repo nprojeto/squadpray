@@ -2,6 +2,7 @@
 import { api, enviarAvatar, TIPOS_SQUAD } from "~/lib/api";
 
 const { perfil, squads, carregar, sair, temSelo, melhorStreak } = useSessao();
+const { comecar } = useTour();
 const nome = ref(""); const bio = ref("");
 const igreja = ref(""); const ministerios = ref(""); const nascimento = ref("");
 const instagram = ref(""); const facebook = ref(""); const tiktok = ref(""); const youtube = ref("");

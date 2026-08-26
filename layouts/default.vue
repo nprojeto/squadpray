@@ -53,7 +53,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
           v-if="logado"
           class="md:hidden w-10 h-10 grid place-items-center border-2 border-tinta rounded-lg
                  bg-cartao shadow-blocoP shrink-0"
-          :aria-expanded="gaveta" aria-label="Abrir menu"
+          data-tour="menu" :aria-expanded="gaveta" aria-label="Abrir menu"
           @click="gaveta = true"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
@@ -73,7 +73,10 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
-          <NuxtLink v-for="l in links.slice(0, 5)" :key="l.para" :to="l.para" class="btn-fantasma relative">
+          <NuxtLink
+            v-for="l in links.slice(0, 5)" :key="l.para" :to="l.para"
+            class="btn-fantasma relative" :data-tour="l.para.replace('/', '')"
+          >
             {{ l.texto }}
             <span
               v-if="l.contador"
@@ -84,7 +87,10 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
         </nav>
 
         <div class="flex items-center gap-1.5 ml-auto md:ml-0">
-          <NuxtLink v-if="logado" to="/notificacoes" class="btn-fantasma !px-2.5 relative" aria-label="Notificações">
+          <NuxtLink
+            v-if="logado" to="/notificacoes" data-tour="sino"
+            class="btn-fantasma !px-2.5 relative" aria-label="Notificações"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.7 21a2 2 0 0 1-3.4 0" />
@@ -99,7 +105,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
           <div v-if="logado" class="relative">
             <button
               class="rounded-full border-2 border-tinta bg-cartao p-1 hover:bg-amarelo transition"
-              aria-label="Minha conta" @click.stop="contaAberta = !contaAberta"
+              data-tour="conta" aria-label="Minha conta" @click.stop="contaAberta = !contaAberta"
             >
               <AvatarPerfil :url="perfil?.avatar_url" :nome="perfil?.nome" :tamanho="32" />
             </button>
@@ -164,6 +170,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
     </main>
 
     <CelebraConquista v-if="logado" />
+    <TourInicial v-if="logado" />
 
     <footer class="border-t-2 border-tinta py-6 text-center">
       <p class="font-marca text-xl text-laranja -rotate-1 inline-block">{{ recado }}</p>

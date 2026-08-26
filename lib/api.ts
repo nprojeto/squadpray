@@ -80,7 +80,7 @@ export interface Perfil {
   streak_individual?: number; melhor_streak_individual?: number; dias_cumpridos_total?: number;
   admin?: boolean; senha_provisoria?: boolean;
   instagram?: string; facebook?: string; tiktok?: string; youtube?: string;
-  perfil_publico?: boolean;
+  perfil_publico?: boolean; tour_visto?: boolean;
 }
 
 export interface Squad {

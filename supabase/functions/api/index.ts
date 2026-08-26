@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
         return ok({
           perfil, squads: squads ?? [],
           admin: perfil?.admin === true,
+          tour_visto: perfil?.tour_visto === true,
           senha_provisoria: perfil?.senha_provisoria === true,
           notificacoes_nao_lidas: naoLidas ?? 0,
           convites_pendentes: (convParaMim?.length ?? 0) + (await (async () => {
@@ -160,7 +161,7 @@ Deno.serve(async (req) => {
         const campos: any = {};
         for (const k of ["nome", "avatar_url", "bio", "timezone", "igreja", "ministerios",
                          "data_nascimento", "instagram", "facebook", "tiktok", "youtube",
-                         "perfil_publico"]) {
+                         "perfil_publico", "tour_visto"]) {
           if (body[k] !== undefined) campos[k] = body[k];
         }
         campos.updated_at = new Date().toISOString();

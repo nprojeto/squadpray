@@ -40,6 +40,14 @@ export default {
           "0%": { opacity: "0", transform: "scale(.8) rotate(-6deg)" },
           "100%": { opacity: "1", transform: "scale(1) rotate(0)" },
         },
+        gingar: {
+          "0%, 100%": { transform: "translateY(0) rotate(-1.5deg)" },
+          "50%": { transform: "translateY(-8px) rotate(1.5deg)" },
+        },
+        pulsoTour: {
+          "0%, 100%": { borderColor: "rgba(245,206,22,1)" },
+          "50%": { borderColor: "rgba(240,78,35,1)" },
+        },
         piscar: {
           "0%, 100%": { boxShadow: "0 0 0 0 rgba(245,206,22,0)", transform: "scale(1)" },
           "20%, 60%": { boxShadow: "0 0 0 10px rgba(245,206,22,.75)", transform: "scale(1.06)" },
@@ -54,6 +62,8 @@ export default {
         colar: "colar .4s cubic-bezier(.2,.9,.3,1.5) both",
         carimbo: "carimbo 3s ease-in-out infinite",
         piscar: "piscar 1.4s ease-in-out 2",
+        gingar: "gingar 2.2s ease-in-out infinite",
+        pulsoTour: "pulsoTour 1.2s ease-in-out infinite",
       },
     },
   },
