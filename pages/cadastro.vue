@@ -10,6 +10,7 @@ const tiktok = ref(""); const youtube = ref(""); const publico = ref(true);
 const erro = ref<string | null>(null); const pronto = ref(false); const carregando = ref(false);
 const eNome = ref<string | null>(null); const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null); const eConfirma = ref<string | null>(null);
 const { carregar } = useSessao();
+const base = useRuntimeConfig().app.baseURL;
 
 async function criarConta() {
   erro.value = null; eNome.value = eEmail.value = eSenha.value = eConfirma.value = null;
@@ -45,6 +46,10 @@ async function salvarPerfil() {
 
 <template>
   <div class="max-w-lg mx-auto">
+    <img
+      :src="`${base}logo.png`" alt="SquadPray"
+      class="w-20 rounded-full border-2 border-tinta shadow-blocoP mb-5"
+    />
     <NuxtLink to="/" class="rotulo">← voltar</NuxtLink>
     <h1 class="text-5xl mt-3">{{ passo === 1 ? "Criar conta" : "Seu perfil" }}</h1>
     <p class="font-marca text-xl text-laranja">

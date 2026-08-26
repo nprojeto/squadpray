@@ -4,6 +4,7 @@ import { auth } from "~/lib/api";
 const email = ref(""); const senha = ref("");
 const erro = ref<string | null>(null); const carregando = ref(false);
 const eEmail = ref<string | null>(null); const eSenha = ref<string | null>(null);
+const base = useRuntimeConfig().app.baseURL;
 const mostrarAjuda = ref(false);
 const { carregar } = useSessao();
 
@@ -58,6 +59,10 @@ const tipos = [
 <template>
   <div class="grid lg:grid-cols-[1.1fr_.9fr] gap-12 lg:gap-14 items-start">
     <section>
+      <img
+        :src="`${base}logo.png`" alt="SquadPray"
+        class="w-28 sm:w-36 rounded-full border-2 border-tinta shadow-bloco mb-6"
+      />
       <span class="rotulo text-xl">todo mundo junto, ou ninguém</span>
 
       <h1 class="mt-3 text-6xl sm:text-8xl">

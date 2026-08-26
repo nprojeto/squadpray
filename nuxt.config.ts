@@ -17,6 +17,9 @@ export default defineNuxtConfig({
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         { name: "theme-color", content: "#F4F0E2" },
+        { property: "og:title", content: "SquadPray" },
+        { property: "og:image", content: (process.env.NUXT_APP_BASE_URL || "/") + "logo.png" },
+        { property: "og:type", content: "website" },
         {
           name: "description",
           content:
@@ -24,6 +27,8 @@ export default defineNuxtConfig({
         },
       ],
       link: [
+        { rel: "icon", type: "image/png", href: (process.env.NUXT_APP_BASE_URL || "/") + "favicon.png" },
+        { rel: "apple-touch-icon", href: (process.env.NUXT_APP_BASE_URL || "/") + "apple-touch-icon.png" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
         {

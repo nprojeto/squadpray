@@ -163,6 +163,10 @@ const estiloBalao = computed(() => {
               class="absolute -top-2.5 left-8 w-4 h-4 bg-cartao border-t-2 border-l-2 border-tinta rotate-45"
             />
 
+            <img
+              v-if="passo === 0" :src="`${base}logo.png`" alt="SquadPray"
+              class="w-16 h-16 rounded-full border-2 border-tinta mb-3"
+            />
             <p class="rotulo text-lg">passo {{ passo + 1 }} de {{ passos.length }}</p>
             <h2 class="text-2xl mt-1 leading-tight">{{ atual.titulo }}</h2>
             <p class="text-sm font-semibold mt-2 leading-snug">{{ atual.texto }}</p>
