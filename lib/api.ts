@@ -175,6 +175,7 @@ export const api = {
     chamar(`/squads/${id}/convidar`, { metodo: "POST", corpo: { email } }),
   calendario: (id: string) => chamar(`/squads/${id}/calendario`),
   galeria: (id: string) => chamar(`/squads/${id}/galeria`),
+  artigos: (id: string, pagina = 0) => chamar(`/squads/${id}/artigos?pagina=${pagina}`),
   sairDoSquad: (id: string) => chamar(`/squads/${id}/sair`, { metodo: "DELETE" }),
   cancelarConvite: (squadId: string, conviteId: string) =>
     chamar(`/squads/${squadId}/convites/${conviteId}`, { metodo: "DELETE" }),

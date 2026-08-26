@@ -188,14 +188,44 @@ async function votarExclusao(aprovado: boolean) {
 }
 
 const abertoId = ref<string | null>(null);
+
+// artigos carregados de 20 em 20, do mais novo para o mais antigo
+const artigos = ref<any[]>([]);
+const paginaArtigos = ref(0);
+const temMaisArtigos = ref(false);
+const totalArtigos = ref(0);
+const carregandoArtigos = ref(false);
+
+async function carregarArtigos(reiniciar = false) {
+  if (carregandoArtigos.value) return;
+  carregandoArtigos.value = true;
+  try {
+    const pagina = reiniciar ? 0 : paginaArtigos.value;
+    const r: any = await api.artigos(id, pagina);
+    artigos.value = reiniciar ? r.posts : [...artigos.value, ...r.posts];
+    totalArtigos.value = r.total ?? artigos.value.length;
+    temMaisArtigos.value = !!r.tem_mais;
+    paginaArtigos.value = pagina + 1;
+  } catch (e: any) { erro.value = e.message; }
+  finally { carregandoArtigos.value = false; }
+}
+
+watch(aba, (v) => {
+  if (v === "historico" && !artigos.value.length) carregarArtigos(true);
+});
 function alternarArtigo(pid: string) {
   abertoId.value = abertoId.value === pid ? null : pid;
 }
 
 async function reagirEm(postId: string, codigo: string) {
   erro.value = null;
-  try { await api.reagir(postId, codigo); await buscar(); }
-  catch (e: any) { erro.value = e.message; }
+  try {
+    await api.reagir(postId, codigo);
+    const paginas = paginaArtigos.value;
+    artigos.value = []; paginaArtigos.value = 0;
+    for (let i = 0; i < Math.max(1, paginas); i++) await carregarArtigos(i === 0);
+    await buscar();
+  } catch (e: any) { erro.value = e.message; }
 }
 
 function periodoDoPost(post: any) {
@@ -600,7 +630,7 @@ function jaConfirmei(f: any) {
 
       <!-- ARTIGOS -->
       <section v-if="aba === 'historico'" class="mt-8 space-y-4">
-        <article v-for="p in dados.posts" :key="p.id" class="painel overflow-hidden">
+        <article v-for="p in artigos" :key="p.id" class="painel overflow-hidden">
           <div class="p-6">
             <div class="flex items-start justify-between gap-3 flex-wrap">
               <div class="min-w-0">
@@ -669,9 +699,23 @@ function jaConfirmei(f: any) {
           </div>
         </article>
 
-        <p v-if="!dados.posts?.length" class="painel p-8 text-center font-semibold">
+        <p v-if="carregandoArtigos && !artigos.length" class="font-semibold">Carregando…</p>
+
+        <p v-else-if="!artigos.length" class="painel p-8 text-center font-semibold">
           Nenhum artigo publicado ainda.
         </p>
+
+        <div v-if="artigos.length" class="text-center pt-2">
+          <button
+            v-if="temMaisArtigos" class="btn-vidro" :disabled="carregandoArtigos"
+            @click="carregarArtigos()"
+          >{{ carregandoArtigos ? "Carregando…" : "Carregar mais" }}</button>
+
+          <p class="text-xs font-semibold text-fumaca mt-3">
+            {{ artigos.length }} de {{ totalArtigos }}
+            {{ totalArtigos === 1 ? 'artigo' : 'artigos' }}
+          </p>
+        </div>
       </section>
 
       <!-- GALERIA -->

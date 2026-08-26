@@ -342,7 +342,7 @@ Deno.serve(async (req) => {
           .eq("squad_id", squadId).order("indice");
         const { data: posts } = await db.from("posts")
           .select("*, profiles:autor_id(id, nome, avatar_url), post_reactions(id, emoji, user_id, profiles:user_id(nome))")
-          .eq("squad_id", squadId).order("created_at", { ascending: false }).limit(30);
+          .eq("squad_id", squadId).order("created_at", { ascending: false }).limit(20);
         const { data: fotos } = await db.from("weekly_photos")
           .select("*, profiles:user_id(id, nome, avatar_url), photo_confirmations(id, user_id)")
           .eq("squad_id", squadId).order("created_at", { ascending: false });
@@ -529,6 +529,26 @@ Deno.serve(async (req) => {
 
         const { data: st } = await db.rpc("avaliar_periodo", { p_period: period_id });
         return ok({ foto, streak: st }, 201);
+      }
+
+      // GET /squads/:id/artigos?pagina=0
+      if (seg[2] === "artigos" && metodo === "GET") {
+        const porPagina = 20;
+        const pagina = Math.max(0, Number(url.searchParams.get("pagina") ?? 0));
+        const de = pagina * porPagina;
+
+        const { data, error, count } = await db.from("posts")
+          .select("*, profiles:autor_id(id, nome, avatar_url), post_reactions(id, emoji, user_id, profiles:user_id(nome))", { count: "exact" })
+          .eq("squad_id", squadId)
+          .order("created_at", { ascending: false })
+          .range(de, de + porPagina - 1);
+        if (error) return erro(error.message);
+
+        return ok({
+          posts: data ?? [],
+          total: count ?? 0,
+          tem_mais: (count ?? 0) > de + (data?.length ?? 0),
+        });
       }
 
       // GET /squads/:id/galeria
