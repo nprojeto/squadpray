@@ -69,7 +69,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
           <span class="w-9 h-9 grid place-items-center bg-laranja border-2 border-tinta rounded-lg -rotate-6">
             <EmojiCristao codigo="oracao" :tamanho="22" />
           </span>
-          <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">EleveSquad</span>
+          <span class="font-display text-xl sm:text-2xl uppercase tracking-tight">SquadPray</span>
         </NuxtLink>
 
         <nav v-if="logado" class="hidden md:flex items-center gap-1 text-sm ml-auto mr-2">
@@ -127,7 +127,7 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
         <aside class="absolute left-0 top-0 bottom-0 w-72 max-w-[85%] bg-papel border-r-2 border-tinta
                       shadow-bloco flex flex-col">
           <div class="flex items-center justify-between gap-3 px-5 h-16 border-b-2 border-tinta">
-            <span class="font-display text-xl uppercase tracking-tight">EleveSquad</span>
+            <span class="font-display text-xl uppercase tracking-tight">SquadPray</span>
             <button
               class="w-10 h-10 grid place-items-center border-2 border-tinta rounded-lg bg-cartao"
               aria-label="Fechar menu" @click="gaveta = false"

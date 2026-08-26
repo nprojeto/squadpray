@@ -5,12 +5,12 @@ export function useTema() {
     escuro.value = v;
     if (import.meta.client) {
       document.documentElement.classList.toggle("escuro", v);
-      localStorage.setItem("elevesquad-tema", v ? "escuro" : "claro");
+      localStorage.setItem("squadpray-tema", v ? "escuro" : "claro");
     }
   }
   function iniciar() {
     if (!import.meta.client) return;
-    const salvo = localStorage.getItem("elevesquad-tema") ?? localStorage.getItem("squadpray-tema");
+    const salvo = localStorage.getItem("squadpray-tema") ?? localStorage.getItem("elevesquad-tema");
     if (salvo) aplicar(salvo === "escuro");
     else aplicar(window.matchMedia("(prefers-color-scheme: dark)").matches);
   }
