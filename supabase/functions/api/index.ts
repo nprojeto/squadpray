@@ -806,16 +806,27 @@ Deno.serve(async (req) => {
       const { data: catalogo } = await db.from("conquistas")
         .select("*").eq("ativo", true).order("ordem");
       const { data: minhas } = await db.from("conquistas_usuario")
-        .select("codigo, conquistado_em").eq("user_id", alvo);
+        .select("codigo, conquistado_em, visto").eq("user_id", alvo);
 
-      const mapa = new Map((minhas ?? []).map((m: any) => [m.codigo, m.conquistado_em]));
+      const mapa = new Map((minhas ?? []).map((m: any) => [m.codigo, m]));
       const selos = (catalogo ?? []).map((c: any) => ({
         ...c,
         conquistado: mapa.has(c.codigo),
-        conquistado_em: mapa.get(c.codigo) ?? null,
+        conquistado_em: mapa.get(c.codigo)?.conquistado_em ?? null,
       }));
 
-      return ok({ selos });
+      const pendentes = alvo === user.id
+        ? selos.filter((s: any) => s.conquistado && mapa.get(s.codigo)?.visto === false)
+        : [];
+
+      return ok({ selos, pendentes });
+    }
+
+    // POST /conquistas/:codigo/visto
+    if (seg[0] === "conquistas" && seg[1] && seg[2] === "visto" && metodo === "POST") {
+      await db.from("conquistas_usuario")
+        .update({ visto: true }).eq("user_id", user.id).eq("codigo", seg[1]);
+      return ok({ sucesso: true });
     }
 
     // ============ EXPLORAR ============

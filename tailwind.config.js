@@ -40,6 +40,11 @@ export default {
           "0%": { opacity: "0", transform: "scale(.8) rotate(-6deg)" },
           "100%": { opacity: "1", transform: "scale(1) rotate(0)" },
         },
+        piscar: {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(245,206,22,0)", transform: "scale(1)" },
+          "20%, 60%": { boxShadow: "0 0 0 10px rgba(245,206,22,.75)", transform: "scale(1.06)" },
+          "40%, 80%": { boxShadow: "0 0 0 0 rgba(245,206,22,0)", transform: "scale(1)" },
+        },
         carimbo: {
           "0%,100%": { transform: "rotate(-4deg) scale(1)" },
           "50%": { transform: "rotate(-4deg) scale(1.04)" },
@@ -48,6 +53,7 @@ export default {
       animation: {
         colar: "colar .4s cubic-bezier(.2,.9,.3,1.5) both",
         carimbo: "carimbo 3s ease-in-out infinite",
+        piscar: "piscar 1.4s ease-in-out 2",
       },
     },
   },

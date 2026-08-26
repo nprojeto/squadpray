@@ -1,10 +1,16 @@
 <script setup lang="ts">
-defineProps<{ selo: any; imagem: string }>();
+const props = defineProps<{ selo: any; imagem: string }>();
 const virado = ref(false);
+const { destaque } = useConquistas();
+const emFoco = computed(() => destaque.value === props.selo.codigo);
 </script>
 
 <template>
-  <div class="[perspective:1000px] h-full">
+  <div
+    class="[perspective:1000px] h-full rounded-xl transition"
+    :data-selo="selo.codigo"
+    :class="emFoco ? 'animate-piscar' : ''"
+  >
     <button
       type="button"
       class="relative w-full h-full min-h-[11.5rem] sm:min-h-[13rem] text-left

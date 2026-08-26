@@ -185,6 +185,8 @@ export const api = {
   votarExclusao: (id: string, aprovado: boolean) =>
     chamar(`/squads/${id}/exclusao/votar`, { metodo: "POST", corpo: { aprovado } }),
   conquistas: (de?: string) => chamar(`/conquistas${de ? `?de=${de}` : ""}`),
+  marcarConquistaVista: (codigo: string) =>
+    chamar(`/conquistas/${codigo}/visto`, { metodo: "POST" }),
   explorar: () => chamar("/explorar"),
   solicitarEntrada: (id: string, mensagem?: string) =>
     chamar(`/squads/${id}/solicitar`, { metodo: "POST", corpo: { mensagem } }),

@@ -6,9 +6,14 @@ const carregando = ref(true);
 const erro = ref<string | null>(null);
 const base = useRuntimeConfig().app.baseURL;
 const { perfil } = useSessao();
+const { verificar } = useConquistas();
 
 onMounted(async () => {
-  try { const r: any = await api.conquistas(); selos.value = r.selos ?? []; }
+  try {
+    const r: any = await api.conquistas();
+    selos.value = r.selos ?? [];
+    await verificar();
+  }
   catch (e: any) { erro.value = e.message; }
   finally { carregando.value = false; }
 });

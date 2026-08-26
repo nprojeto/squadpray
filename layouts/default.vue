@@ -163,6 +163,8 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
       <slot />
     </main>
 
+    <CelebraConquista v-if="logado" />
+
     <footer class="border-t-2 border-tinta py-6 text-center">
       <p class="font-marca text-xl text-laranja -rotate-1 inline-block">{{ recado }}</p>
     </footer>
