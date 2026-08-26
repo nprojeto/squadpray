@@ -61,7 +61,7 @@ const emFoco = computed(() => destaque.value === props.selo.codigo);
         </span>
         <span class="block font-marca text-base mt-3"
               :class="selo.conquistado ? 'text-verde' : 'text-fumaca'">
-          {{ selo.conquistado ? 'conquistado!' : 'ainda não' }}
+          {{ selo.conquistado ? 'conquistado!' : 'seja intencional pra chegar lá' }}
         </span>
       </span>
     </button>

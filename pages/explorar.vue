@@ -73,7 +73,9 @@ function diasRestantes(s: any) {
     </nav>
 
     <p v-if="aba === 'montando'" class="font-marca text-lg text-laranja mt-4">
-      {{ vagas > 0 ? `você ainda pode entrar em ${vagas} squad${vagas > 1 ? 's' : ''}` : 'seus lugares de convidado estão cheios' }}
+      {{ vagas > 0
+        ? `você ainda pode entrar em ${vagas} squad${vagas > 1 ? 's' : ''}`
+        : 'seus lugares de convidado estão cheios, assim que você completá-los poderá ingressar como convidado(a) em 2 novos squads' }}
     </p>
 
     <p v-if="carregando" class="mt-8 font-semibold">Carregando…</p>

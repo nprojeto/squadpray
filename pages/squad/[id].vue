@@ -638,19 +638,14 @@ function jaConfirmei(f: any) {
                 <span class="rotulo">
                   <template v-if="periodoDoPost(p)">
                     {{ semanal ? 'Semana' : 'Dia' }} {{ periodoDoPost(p).indice }}
-                    de {{ squad.total_periodos }} ·
+                    de {{ squad.total_periodos }}
                   </template>
-                  {{ dataBR(p.created_at) }}
+                  <template v-if="p.referencia"> · {{ p.referencia }}</template>
                 </span>
                 <span class="text-sm font-semibold">
                   Escala: <span class="text-laranja">{{ p.profiles?.nome }}</span>
                 </span>
               </div>
-
-              <h3 v-if="p.titulo" class="text-2xl mt-3">{{ p.titulo }}</h3>
-              <p class="rotulo mt-1">
-                {{ p.profiles?.nome }}<template v-if="p.referencia"> · {{ p.referencia }}</template>
-              </p>
 
               <p class="mt-4 leading-relaxed whitespace-pre-line">{{ p.conteudo }}</p>
             </div>
@@ -661,10 +656,6 @@ function jaConfirmei(f: any) {
                 :meu-id="perfil?.id ?? ''" :sou-autor="p.autor_id === perfil?.id"
                 @reagir="(c) => reagirEm(p.id, c)"
               />
-
-              <p v-if="quemLeu(p).length" class="font-marca text-lg text-fumaca mt-3">
-                leram: {{ quemLeu(p).join(', ') }}
-              </p>
 
               <div v-if="quemFalta(p).length" class="mt-3">
                 <p class="text-xs font-semibold text-fumaca">

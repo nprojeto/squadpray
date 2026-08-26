@@ -115,7 +115,7 @@ const redes = computed(() => ([
             </div>
             <h3 class="text-2xl mt-3">{{ s.nome }}</h3>
             <p class="font-marca text-lg text-laranja mt-1">
-              {{ s.criado_por === p.id ? 'squad que ele criou' : 'squad em que foi convidado' }}
+              {{ s.criado_por === p.id ? 'squad que ele(a) criou' : 'squad em que foi convidado(a)' }}
             </p>
 
             <div class="grid grid-cols-2 gap-2 mt-4 text-center">

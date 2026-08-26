@@ -29,7 +29,7 @@ async function carregarUsuarios() {
   catch (e: any) { erro.value = e.message; }
 }
 
-onMounted(async () => { await carregarPainel(); await carregarUsuarios(); });
+onMounted(async () => { await carregarUsuarios(); await carregarPainel(); });
 watch(termo, () => { clearTimeout(atraso); atraso = setTimeout(carregarUsuarios, 350); });
 
 function abrirEdicao(u: any) { editando.value = { ...u }; aviso.value = null; erro.value = null; }
@@ -76,6 +76,10 @@ async function excluirSquad(id: string) {
   erro.value = null;
   try { await api.adminExcluirSquad(id); aviso.value = "Squad excluído."; await carregarPainel(); }
   catch (e: any) { erro.value = e.message; }
+}
+
+function nomeDe(id: string) {
+  return usuarios.value.find((u: any) => u.id === id)?.nome ?? "—";
 }
 
 const n = computed(() => dados.value?.numeros ?? {});
@@ -222,6 +226,12 @@ const cartoes = computed(() => [
               <div class="min-w-0">
                 <span class="faixa bg-amarelo text-xs -rotate-1">{{ TIPOS_SQUAD[s.tipo]?.nome }}</span>
                 <p class="font-display text-xl mt-2 truncate">{{ s.nome }}</p>
+                <p class="text-xs font-semibold text-fumaca">
+                  criado por
+                  <NuxtLink :to="`/prayer/${s.criado_por}`" class="text-tinta hover:text-laranja">
+                    {{ nomeDe(s.criado_por) }}
+                  </NuxtLink>
+                </p>
                 <p class="text-xs font-semibold text-fumaca">
                   {{ s.status }} · {{ s.qtd_membros }} pessoas ·
                   streak <span class="font-mono">{{ s.streak_atual }}</span> ·
