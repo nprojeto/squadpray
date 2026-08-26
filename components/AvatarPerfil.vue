@@ -16,9 +16,9 @@ const lado = computed(() => `${props.tamanho}px`);
     :style="{ width: lado, height: lado, minWidth: lado, minHeight: lado, flex: `0 0 ${lado}` }"
   >
     <span class="absolute inset-0 rounded-full overflow-hidden border-2 border-tinta bg-amarelo">
-      <img
+      <FotoSegura
         v-if="url" :src="url" :alt="nome ? `Foto de ${nome}` : 'Foto de perfil'"
-        class="block w-full h-full object-cover"
+        classe="block w-full h-full object-cover"
       />
       <span
         v-else

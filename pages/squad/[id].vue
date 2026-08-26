@@ -601,7 +601,10 @@ function jaConfirmei(f: any) {
               </div>
               <div class="grid sm:grid-cols-2 gap-4">
                 <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
-                  <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover border-b-2 border-tinta" />
+                  <FotoSegura
+                    :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`"
+                    classe="w-full h-44 object-cover border-b-2 border-tinta"
+                  />
                   <div class="p-4">
                     <p class="font-bold text-sm">{{ f.profiles?.nome }}</p>
                     <p v-if="f.legenda" class="text-sm font-semibold mt-2 leading-relaxed">
@@ -722,7 +725,10 @@ function jaConfirmei(f: any) {
       <section v-if="aba === 'galeria'" class="mt-8">
         <div class="grid sm:grid-cols-3 gap-4">
           <figure v-for="f in dados.fotos" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
-            <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-40 object-cover border-b-2 border-tinta" />
+            <FotoSegura
+              :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`"
+              classe="w-full h-40 object-cover border-b-2 border-tinta"
+            />
             <figcaption class="p-3 text-xs">
               <span class="font-bold">{{ f.profiles?.nome }}</span>
               <span class="text-fumaca block mt-0.5">{{ dataBR(f.created_at) }}</span>

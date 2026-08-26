@@ -234,6 +234,31 @@ export const api = {
 };
 
 // ---------- upload de imagens ----------
+// as fotos agora exigem login: guardamos o caminho e abrimos por link temporário
+const cacheLinks = new Map<string, { url: string; ate: number }>();
+
+export function caminhoDaFoto(valor?: string | null): string | null {
+  if (!valor) return null;
+  if (!valor.startsWith("http")) return valor;
+  const m = valor.match(/\/galeria\/(.+)$/);
+  return m ? decodeURIComponent(m[1].split("?")[0]) : null;
+}
+
+export async function linkDaFoto(valor?: string | null): Promise<string | null> {
+  const caminho = caminhoDaFoto(valor);
+  if (!caminho) return valor ?? null;
+
+  const guardado = cacheLinks.get(caminho);
+  if (guardado && guardado.ate > Date.now()) return guardado.url;
+
+  const { data, error } = await supabase().storage
+    .from("galeria").createSignedUrl(caminho, 3600);
+  if (error || !data?.signedUrl) return null;
+
+  cacheLinks.set(caminho, { url: data.signedUrl, ate: Date.now() + 50 * 60 * 1000 });
+  return data.signedUrl;
+}
+
 export async function enviarImagem(arquivo: File, pasta: string): Promise<string> {
   if (arquivo.size > 6 * 1024 * 1024) {
     throw new Error("A imagem passa de 6 MB. Escolha uma menor.");
@@ -244,7 +269,7 @@ export async function enviarImagem(arquivo: File, pasta: string): Promise<string
     cacheControl: "3600", upsert: false,
   });
   if (error) throw new Error("Não foi possível enviar a foto. Tente outra imagem.");
-  return supabase().storage.from("galeria").getPublicUrl(caminho).data.publicUrl;
+  return caminho;   // guardamos só o caminho; o link é gerado na hora de mostrar
 }
 
 export const enviarAvatar = (arquivo: File, userId: string) =>
