@@ -25,7 +25,7 @@ const recado = computed(() => {
   if (p === "/cadastro") return "bem-vindo à rede";
   if (p === "/admin") return "os números da plataforma";
   if (p === "/explorar") return "tem gente começando agora";
-  if (p === "/conquistas") return "o que vocês ergueram juntos";
+  if (p === "/conquistas") return "o que você construiu em família";
   if (p === "/nova-senha") return "só mais um passo";
   return "fé que se pratica em grupo";
 });

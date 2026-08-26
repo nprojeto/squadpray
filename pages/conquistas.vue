@@ -23,8 +23,8 @@ const imagem = (c: string) => `${base.replace(/\/$/, "")}/selos/${c}.png`;
 
 <template>
   <div>
-    <span class="rotulo text-xl">o que vocês já ergueram juntos</span>
-    <h1 class="text-5xl sm:text-6xl mt-2">Minhas conquistas</h1>
+    <span class="rotulo text-xl">o que você construiu em família</span>
+    <h1 class="text-5xl sm:text-6xl mt-2">Galeria dos Heróis</h1>
     <p class="font-semibold text-fumaca mt-3 max-w-xl">
       Toque na figurinha para ver o que é preciso para conquistar.
     </p>

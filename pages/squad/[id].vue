@@ -692,12 +692,18 @@ function jaConfirmei(f: any) {
 
               <div v-if="quemFalta(p).length" class="mt-3">
                 <p class="text-xs font-semibold text-fumaca">
-                  Faltam <span class="font-mono text-tinta">{{ quemFalta(p).length }}</span>
-                  {{ quemFalta(p).length === 1 ? 'reação' : 'reações' }}:
+                  <template v-if="periodoDoPost(p) && periodoDoPost(p).data_fim < hojeISO()">
+                    Faltaram <span class="font-mono text-tinta">{{ quemFalta(p).length }}</span>
+                    {{ quemFalta(p).length === 1 ? 'reação' : 'reações' }}:
+                  </template>
+                  <template v-else>
+                    Faltam <span class="font-mono text-tinta">{{ quemFalta(p).length }}</span>
+                    {{ quemFalta(p).length === 1 ? 'reação' : 'reações' }}:
+                  </template>
                 </p>
                 <p class="font-marca text-lg text-laranja mt-1">{{ quemFalta(p).join(', ') }}</p>
               </div>
-              <p v-else class="font-marca text-lg text-verde mt-3">todo mundo já reagiu</p>
+              <p v-else class="font-marca text-lg text-verde mt-3">todo mundo reagiu</p>
             </div>
           </div>
         </article>
