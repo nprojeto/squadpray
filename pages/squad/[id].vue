@@ -77,6 +77,22 @@ const postAtual = computed(() =>
 
 const minhaVez = computed(() => periodoAtual.value?.autor_id === perfil.value?.id);
 
+// quem ainda não reagiu ao artigo de hoje (o autor não precisa reagir)
+const faltamReagir = computed(() => {
+  const post = postAtual.value;
+  if (!post) return [];
+  const jaReagiram = new Set((post.post_reactions ?? []).map((r: any) => r.user_id));
+  return membros.value
+    .filter((m: any) => m.profiles.id !== post.autor_id && !jaReagiram.has(m.profiles.id))
+    .map((m: any) => m.profiles);
+});
+
+// quem ainda não enviou a foto da semana
+const faltamFoto = computed(() => {
+  const enviaram = new Set(fotosDaSemana.value.map((f: any) => f.user_id));
+  return membros.value.filter((m: any) => !enviaram.has(m.profiles.id)).map((m: any) => m.profiles);
+});
+
 const proximoPeriodo = computed(() =>
   periodos.value.find((p: any) => p.data_inicio > hojeISO()));
 
@@ -464,12 +480,27 @@ function jaConfirmei(f: any) {
                   :meu-id="perfil?.id ?? ''" :sou-autor="postAtual.autor_id === perfil?.id"
                   @reagir="reagir"
                 />
-                <p class="text-xs text-fumaca mt-4">
-                  Faltam
-                  <span class="font-mono text-tinta">
-                    {{ Math.max(0, membros.length - 1 - (postAtual.post_reactions?.length ?? 0)) }}
-                  </span>
-                  reações para o dia contar.
+                <div v-if="faltamReagir.length" class="mt-4">
+                  <p class="text-xs font-semibold text-fumaca">
+                    Faltam <span class="font-mono text-tinta">{{ faltamReagir.length }}</span>
+                    {{ faltamReagir.length === 1 ? 'reação' : 'reações' }} para o dia contar:
+                  </p>
+                  <ul class="flex flex-wrap gap-2 mt-2">
+                    <li v-for="p in faltamReagir" :key="p.id">
+                      <NuxtLink
+                        :to="`/prayer/${p.id}`"
+                        class="flex items-center gap-2 rounded-full border-2 border-dashed border-risco
+                               pl-1 pr-3 py-1 hover:border-laranja transition"
+                      >
+                        <AvatarPerfil :url="p.avatar_url" :nome="p.nome" :tamanho="24" />
+                        <span class="text-xs font-bold">{{ p.nome }}</span>
+                      </NuxtLink>
+                    </li>
+                  </ul>
+                </div>
+
+                <p v-else class="font-marca text-lg text-verde mt-4">
+                  todo mundo já reagiu — dia fechado!
                 </p>
               </div>
             </article>
@@ -522,9 +553,25 @@ function jaConfirmei(f: any) {
             <p v-else class="mt-6 text-verde text-sm">Sua foto desta semana já foi enviada.</p>
 
             <div class="chumbo mt-7 pt-6">
-              <p class="rotulo mb-4">
+              <p class="rotulo mb-2">
                 Fotos desta semana · {{ fotosDaSemana.length }} de {{ membros.length }}
               </p>
+
+              <div v-if="faltamFoto.length" class="mb-4">
+                <p class="text-xs font-semibold text-fumaca">Ainda não enviaram:</p>
+                <ul class="flex flex-wrap gap-2 mt-2">
+                  <li v-for="p in faltamFoto" :key="p.id">
+                    <NuxtLink
+                      :to="`/prayer/${p.id}`"
+                      class="flex items-center gap-2 rounded-full border-2 border-dashed border-risco
+                             pl-1 pr-3 py-1 hover:border-laranja transition"
+                    >
+                      <AvatarPerfil :url="p.avatar_url" :nome="p.nome" :tamanho="24" />
+                      <span class="text-xs font-bold">{{ p.nome }}</span>
+                    </NuxtLink>
+                  </li>
+                </ul>
+              </div>
               <div class="grid sm:grid-cols-2 gap-4">
                 <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">
                   <img :src="f.foto_url" :alt="`Foto de ${f.profiles?.nome}`" class="w-full h-44 object-cover border-b-2 border-tinta" />
