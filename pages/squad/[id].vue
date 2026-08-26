@@ -198,6 +198,21 @@ async function reagirEm(postId: string, codigo: string) {
   catch (e: any) { erro.value = e.message; }
 }
 
+function periodoDoPost(post: any) {
+  return periodos.value.find((p: any) => p.id === post.period_id);
+}
+
+function quemLeu(post: any) {
+  return (post.post_reactions ?? []).map((r: any) => r.profiles?.nome ?? "alguém");
+}
+
+function quemFalta(post: any) {
+  const jaReagiram = new Set((post.post_reactions ?? []).map((r: any) => r.user_id));
+  return membros.value
+    .filter((m: any) => m.profiles.id !== post.autor_id && !jaReagiram.has(m.profiles.id))
+    .map((m: any) => m.profiles.nome);
+}
+
 function resumo(texto: string, limite = 180) {
   const t = (texto ?? "").trim().replace(/\s+/g, " ");
   return t.length > limite ? t.slice(0, limite) + "…" : t;

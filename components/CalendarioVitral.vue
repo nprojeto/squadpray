@@ -44,8 +44,8 @@ const faltamPraCoroa = computed(() => Math.max(0, 7 - props.streak));
           <span class="faixa bg-amarelo text-sm">
             {{ cumpridos }}/{{ periodos.length }} {{ semanal ? 'encontros' : 'dias' }}
           </span>
-          <span v-if="meuStreak" class="faixa bg-cartao text-sm">seu streak {{ meuStreak }}</span>
-          <span v-if="meusDias" class="faixa bg-cartao text-sm">você cumpriu {{ meusDias }}</span>
+          <span v-if="meuStreak" class="faixa bg-laranja text-papel text-sm">seu streak {{ meuStreak }}</span>
+          <span v-if="meusDias" class="faixa bg-rosa text-papel text-sm">você cumpriu {{ meusDias }}</span>
         </div>
       </div>
 
