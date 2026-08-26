@@ -485,18 +485,9 @@ function jaConfirmei(f: any) {
                     Faltam <span class="font-mono text-tinta">{{ faltamReagir.length }}</span>
                     {{ faltamReagir.length === 1 ? 'reação' : 'reações' }} para o dia contar:
                   </p>
-                  <ul class="flex flex-wrap gap-2 mt-2">
-                    <li v-for="p in faltamReagir" :key="p.id">
-                      <NuxtLink
-                        :to="`/prayer/${p.id}`"
-                        class="flex items-center gap-2 rounded-full border-2 border-dashed border-risco
-                               pl-1 pr-3 py-1 hover:border-laranja transition"
-                      >
-                        <AvatarPerfil :url="p.avatar_url" :nome="p.nome" :tamanho="24" />
-                        <span class="text-xs font-bold">{{ p.nome }}</span>
-                      </NuxtLink>
-                    </li>
-                  </ul>
+                  <p class="font-marca text-lg text-laranja mt-1">
+                    {{ faltamReagir.map(p => p.nome).join(', ') }}
+                  </p>
                 </div>
 
                 <p v-else class="font-marca text-lg text-verde mt-4">
@@ -559,18 +550,9 @@ function jaConfirmei(f: any) {
 
               <div v-if="faltamFoto.length" class="mb-4">
                 <p class="text-xs font-semibold text-fumaca">Ainda não enviaram:</p>
-                <ul class="flex flex-wrap gap-2 mt-2">
-                  <li v-for="p in faltamFoto" :key="p.id">
-                    <NuxtLink
-                      :to="`/prayer/${p.id}`"
-                      class="flex items-center gap-2 rounded-full border-2 border-dashed border-risco
-                             pl-1 pr-3 py-1 hover:border-laranja transition"
-                    >
-                      <AvatarPerfil :url="p.avatar_url" :nome="p.nome" :tamanho="24" />
-                      <span class="text-xs font-bold">{{ p.nome }}</span>
-                    </NuxtLink>
-                  </li>
-                </ul>
+                <p class="font-marca text-lg text-laranja mt-1">
+                  {{ faltamFoto.map(p => p.nome).join(', ') }}
+                </p>
               </div>
               <div class="grid sm:grid-cols-2 gap-4">
                 <div v-for="f in fotosDaSemana" :key="f.id" class="rounded-xl border-2 border-tinta overflow-hidden bg-papel">

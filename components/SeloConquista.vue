@@ -19,9 +19,8 @@ const virado = ref(false);
                flex flex-col items-center overflow-hidden"
       >
         <span class="flex items-center justify-center gap-0.5 shrink-0">
-          <svg v-for="i in selo.estrelas" :key="i" width="12" height="12" viewBox="0 0 24 24"
-               :fill="selo.conquistado ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"
-               :class="selo.conquistado ? 'text-amarelo' : 'text-fumaca'">
+          <svg v-for="i in selo.estrelas" :key="i" width="13" height="13" viewBox="0 0 24 24"
+               fill="#F5CE16" stroke="#151310" stroke-width="1.8" stroke-linejoin="round">
             <path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z" />
           </svg>
         </span>
@@ -30,7 +29,7 @@ const virado = ref(false);
           <img
             :src="imagem" :alt="selo.titulo"
             class="max-w-full max-h-full object-contain"
-            :style="selo.conquistado ? '' : 'filter: brightness(.78) saturate(.9); opacity:.75;'"
+            :style="selo.conquistado ? '' : 'filter: brightness(.55) saturate(.75); opacity:.6;'"
           />
         </span>
 
