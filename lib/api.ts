@@ -257,11 +257,12 @@ export function proximaSegunda(base = new Date()): string {
   const d = new Date(base);
   const dow = d.getDay();
   d.setDate(d.getDate() + (dow === 1 ? 0 : (8 - dow) % 7));
-  return d.toISOString().slice(0, 10);
+  return d.toLocaleDateString("sv-SE");
 }
 
 export function hojeISO() {
-  return new Date().toISOString().slice(0, 10);
+  // data no fuso do aparelho — não em UTC
+  return new Date().toLocaleDateString("sv-SE");
 }
 
 export function calcularIdade(nascimento?: string | null): number | null {

@@ -32,7 +32,7 @@ const imagem = (c: string) => `${base.replace(/\/$/, "")}/selos/${c}.png`;
     <AvisoErro :mensagem="erro" class="mt-6" />
     <p v-if="carregando" class="mt-8 font-semibold">Carregando…</p>
 
-    <ul v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+    <ul v-else class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 mt-8 items-stretch">
       <li v-for="s in selos" :key="s.codigo">
         <SeloConquista :selo="s" :imagem="imagem(s.codigo)" />
       </li>

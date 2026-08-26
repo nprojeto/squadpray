@@ -44,7 +44,7 @@ const valorPeriodo = computed(() => (totalPeriodos.value ? 100 / totalPeriodos.v
 const minimoFim = computed(() => {
   const d = new Date(inicioReal.value + "T12:00:00");
   d.setDate(d.getDate() + (semanal.value ? 27 : 20));
-  return d.toISOString().slice(0, 10);
+  return d.toLocaleDateString("sv-SE");
 });
 
 const regraMinima = computed(() => semanal.value

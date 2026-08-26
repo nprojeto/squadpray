@@ -40,14 +40,21 @@ async function usuarioAtual(req: Request) {
 }
 
 const SEMANAIS = ["celebracao", "gdc"];
+const FUSO = "America/Sao_Paulo";
+
+// data de hoje no fuso do Brasil, não em UTC
+function hojeLocal(fuso = FUSO): string {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: fuso }).format(new Date());
+}
 const TIPOS = ["leitura_biblica", "livros", "devocional", "oracao", "jejum", "celebracao", "gdc"];
 
 // próxima segunda-feira (ou hoje, se hoje for segunda)
 function proximaSegunda(base = new Date()): string {
-  const d = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()));
-  const dow = d.getUTCDay(); // 0 dom ... 1 seg
-  const faltam = dow === 1 ? 0 : (8 - dow) % 7;
-  d.setUTCDate(d.getUTCDate() + faltam);
+  const iso = new Intl.DateTimeFormat("sv-SE", { timeZone: FUSO }).format(base);
+  const [a, m, dd] = iso.split("-").map(Number);
+  const d = new Date(Date.UTC(a, m - 1, dd));
+  const dow = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() + (dow === 1 ? 0 : (8 - dow) % 7));
   return d.toISOString().slice(0, 10);
 }
 
@@ -469,7 +476,7 @@ Deno.serve(async (req) => {
         if (!periodo) return erro("Período não encontrado.");
         if (periodo.autor_id !== user.id) return erro("Hoje não é a sua vez na escala.", 403);
 
-        const hoje = new Date().toISOString().slice(0, 10);
+        const hoje = hojeLocal();
         if (periodo.data_inicio > hoje) {
           return erro("Esse dia ainda não chegou. Volte quando for a data dele.");
         }
@@ -498,7 +505,7 @@ Deno.serve(async (req) => {
         const { data: periodoFoto } = await db.from("squad_periods")
           .select("data_inicio, data_fim").eq("id", period_id).eq("squad_id", squadId).single();
         if (!periodoFoto) return erro("Semana não encontrada.");
-        const hojeF = new Date().toISOString().slice(0, 10);
+        const hojeF = hojeLocal();
         if (periodoFoto.data_inicio > hojeF) {
           return erro("Essa semana ainda não começou. Volte na segunda-feira dela.");
         }

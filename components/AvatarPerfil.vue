@@ -7,23 +7,25 @@ const props = withDefaults(defineProps<{
 const iniciais = computed(() =>
   (props.nome ?? "?").trim().split(/\s+/).slice(0, 2).map(p => p[0]).join("").toUpperCase());
 const marca = computed(() => Math.max(16, Math.round(props.tamanho * 0.42)));
+const lado = computed(() => `${props.tamanho}px`);
 </script>
 
 <template>
   <span
-    class="relative inline-block shrink-0 rounded-full overflow-visible"
-    :style="{ width: tamanho + 'px', height: tamanho + 'px', minWidth: tamanho + 'px', minHeight: tamanho + 'px' }"
+    class="relative block shrink-0"
+    :style="{ width: lado, height: lado, minWidth: lado, minHeight: lado, flex: `0 0 ${lado}` }"
   >
-    <img
-      v-if="url" :src="url" :alt="nome ? `Foto de ${nome}` : 'Foto de perfil'"
-      class="w-full h-full object-cover rounded-full border-2 border-tinta"
-    />
-    <span
-      v-else
-      class="w-full h-full rounded-full border-2 border-tinta bg-amarelo grid place-items-center
-             font-display uppercase leading-none"
-      :style="{ fontSize: Math.round(tamanho * 0.38) + 'px' }"
-    >{{ iniciais }}</span>
+    <span class="absolute inset-0 rounded-full overflow-hidden border-2 border-tinta bg-amarelo">
+      <img
+        v-if="url" :src="url" :alt="nome ? `Foto de ${nome}` : 'Foto de perfil'"
+        class="block w-full h-full object-cover"
+      />
+      <span
+        v-else
+        class="flex w-full h-full items-center justify-center font-display uppercase leading-none"
+        :style="{ fontSize: Math.round(tamanho * 0.38) + 'px' }"
+      >{{ iniciais }}</span>
+    </span>
 
     <span
       v-if="selo"

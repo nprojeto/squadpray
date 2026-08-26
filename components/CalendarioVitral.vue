@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const cumpridos = computed(() => props.periodos.filter((p) => p.status === "concluido").length);
 
-const hoje = new Date().toISOString().slice(0, 10);
+const hoje = new Date().toLocaleDateString("sv-SE");
 
 function estado(p: Periodo) {
   if (p.status === "concluido") return "feito";

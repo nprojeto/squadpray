@@ -98,7 +98,7 @@ const redes = computed(() => ([
 
       <section v-if="!dados.restrito && conquistados.length" class="mt-6">
         <span class="rotulo text-xl">conquistas</span>
-        <ul class="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3">
+        <ul class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 mt-3 items-stretch">
           <li v-for="s in conquistados" :key="s.codigo">
             <SeloConquista :selo="s" :imagem="imagem(s.codigo)" />
           </li>
