@@ -20,7 +20,10 @@ const virado = ref(false);
       >
         <span class="flex items-center justify-center gap-0.5 shrink-0">
           <svg v-for="i in selo.estrelas" :key="i" width="13" height="13" viewBox="0 0 24 24"
-               fill="#F5CE16" stroke="#151310" stroke-width="1.8" stroke-linejoin="round">
+               :fill="selo.conquistado ? '#F5CE16' : 'none'"
+               :stroke="selo.conquistado ? '#151310' : 'currentColor'"
+               stroke-width="1.8" stroke-linejoin="round"
+               :class="selo.conquistado ? '' : 'text-fumaca'">
             <path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z" />
           </svg>
         </span>
