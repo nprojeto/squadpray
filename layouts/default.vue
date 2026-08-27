@@ -5,6 +5,7 @@ const gaveta = ref(false);
 const contaAberta = ref(false);
 const rota = useRoute();
 const base = useRuntimeConfig().app.baseURL;
+const { comecar: comecarTour } = useTour();
 
 onMounted(() => { iniciar(); carregar(); });
 watch(() => rota.fullPath, () => { gaveta.value = false; contaAberta.value = false; });
@@ -117,6 +118,9 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
               <div class="chumbo my-1" />
               <NuxtLink to="/perfil" class="btn-fantasma w-full justify-start">Meu perfil</NuxtLink>
               <NuxtLink to="/historico" class="btn-fantasma w-full justify-start">Histórico</NuxtLink>
+              <button class="btn-fantasma w-full justify-start" @click.stop="comecarTour">
+                Tour
+              </button>
               <NuxtLink v-if="ehAdmin" to="/admin" class="btn-fantasma w-full justify-start">Painel admin</NuxtLink>
               <button class="btn-fantasma w-full justify-start" @click.stop="alternar">
                 {{ escuro ? "☀ Tema claro" : "☾ Tema escuro" }}
@@ -150,6 +154,11 @@ watch([senhaProvisoria, () => rota.path], ([provisoria, caminho]) => {
           </div>
 
           <nav class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+            <button
+              class="flex items-center justify-between gap-3 rounded-lg px-4 py-3 font-display uppercase
+                     text-lg border-2 border-tinta bg-amarelo shadow-blocoP mb-1"
+              @click="gaveta = false; comecarTour()"
+            >Tour</button>
             <NuxtLink
               v-for="l in links" :key="l.para" :to="l.para"
               class="flex items-center justify-between gap-3 rounded-lg px-4 py-3 font-display uppercase
