@@ -682,6 +682,21 @@ Deno.serve(async (req) => {
         .eq("squad_id", post.squad_id).eq("user_id", user.id).eq("status", "ativo").maybeSingle();
       if (!membro) return erro("Você não participa deste squad.", 403);
 
+      // o dia já fechou: não dá mais para reagir
+      const { data: infoPost } = await db.from("posts")
+        .select("period_id").eq("id", postId).maybeSingle();
+      const { data: janela } = await db.from("squad_periods")
+        .select("data_inicio, data_fim").eq("id", infoPost?.period_id ?? "").maybeSingle();
+      if (janela) {
+        const agora = hojeLocal();
+        if (janela.data_fim < agora) {
+          return erro("Esse dia já passou. As reações dele estão fechadas.");
+        }
+        if (janela.data_inicio > agora) {
+          return erro("Esse dia ainda não chegou.");
+        }
+      }
+
       const { data, error } = await db.from("post_reactions").upsert({
         post_id: postId, squad_id: post.squad_id, user_id: user.id, emoji,
       }, { onConflict: "post_id,user_id" }).select().single();

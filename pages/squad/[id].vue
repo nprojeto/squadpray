@@ -228,6 +228,13 @@ async function reagirEm(postId: string, codigo: string) {
   } catch (e: any) { erro.value = e.message; }
 }
 
+function diaAberto(post: any) {
+  const p = periodos.value.find((x: any) => x.id === post.period_id);
+  if (!p) return false;
+  const hoje = hojeISO();
+  return p.data_inicio <= hoje && hoje <= p.data_fim;
+}
+
 function periodoDoPost(post: any) {
   return periodos.value.find((p: any) => p.id === post.period_id);
 }
@@ -635,17 +642,10 @@ function jaConfirmei(f: any) {
       <section v-if="aba === 'historico'" class="mt-8 space-y-4">
         <article v-for="p in artigos" :key="p.id" class="painel overflow-hidden">
           <div class="p-6">
-            <div class="flex items-start justify-between gap-3 flex-wrap">
-              <div class="min-w-0">
-                <p class="rotulo">{{ p.profiles?.nome }} · {{ dataBR(p.created_at) }}</p>
-                <h3 class="text-2xl mt-1 break-words">
-                  {{ p.titulo || p.referencia || 'Artigo do dia' }}
-                </h3>
-              </div>
-              <button class="btn-vidro !py-2 !px-4 text-xs shrink-0" @click="alternarArtigo(p.id)">
-                {{ abertoId === p.id ? 'Fechar' : 'Ver tudo' }}
-              </button>
-            </div>
+            <p class="rotulo">{{ p.profiles?.nome }} · {{ dataBR(p.created_at) }}</p>
+            <h3 class="text-2xl mt-1 break-words">
+              {{ p.titulo || p.referencia || 'Artigo do dia' }}
+            </h3>
 
             <p v-if="abertoId !== p.id" class="font-semibold text-sm mt-3 leading-relaxed">
               {{ resumo(p.conteudo) }}
@@ -662,6 +662,9 @@ function jaConfirmei(f: any) {
               <span class="font-marca text-lg text-laranja">
                 {{ p.post_reactions?.length ?? 0 }} de {{ membros.length - 1 }} leram
               </span>
+              <button class="btn-vidro !py-2 !px-4 text-xs ml-auto shrink-0" @click="alternarArtigo(p.id)">
+                {{ abertoId === p.id ? 'Fechar' : 'Ver tudo' }}
+              </button>
             </div>
           </div>
 
@@ -685,10 +688,28 @@ function jaConfirmei(f: any) {
 
             <div class="chumbo mt-6 pt-5">
               <BarraReacoes
+                v-if="diaAberto(p)"
                 :emojis="emojis" :reacoes="p.post_reactions ?? []"
                 :meu-id="perfil?.id ?? ''" :sou-autor="p.autor_id === perfil?.id"
                 @reagir="(c) => reagirEm(p.id, c)"
               />
+
+              <div v-else>
+                <span class="rotulo">reações deste dia</span>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <span
+                    v-for="r in p.post_reactions" :key="r.id"
+                    class="flex items-center gap-2 rounded-lg border-2 border-tinta bg-cartao px-3 py-1.5"
+                    :title="r.profiles?.nome"
+                  >
+                    <span class="text-lg leading-none">{{ EMOJI_REACAO[r.emoji] ?? "✨" }}</span>
+                    <span class="text-xs font-bold">{{ r.profiles?.nome }}</span>
+                  </span>
+                </div>
+                <p class="font-marca text-lg text-fumaca mt-3">
+                  esse dia já fechou — as reações estão trancadas
+                </p>
+              </div>
 
               <div v-if="quemFalta(p).length" class="mt-3">
                 <p class="text-xs font-semibold text-fumaca">
