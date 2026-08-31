@@ -4,7 +4,7 @@ import { EMOJI_REACAO } from "~/lib/api";
 const props = defineProps<{
   emojis: { codigo: string; nome: string; descricao?: string }[];
   reacoes: { emoji: string; user_id: string; profiles?: { nome: string } }[];
-  meuId: string; souAutor: boolean; enviando?: boolean;
+  meuId: string; souAutor: boolean; enviando?: boolean; trancado?: boolean;
 }>();
 const emit = defineEmits<{ reagir: [codigo: string] }>();
 
@@ -19,19 +19,25 @@ const contagem = computed(() => {
 <template>
   <div>
     <span class="rotulo">
-      {{ souAutor ? 'reações do seu squad' : (minhaReacao ? 'você marcou que leu' : 'reaja para marcar que leu') }}
+      {{ trancado
+        ? 'reações deste dia'
+        : (souAutor ? 'reações do seu squad'
+          : (minhaReacao ? 'você marcou que leu' : 'reaja para marcar que leu')) }}
     </span>
 
     <div class="flex flex-wrap gap-2 mt-3">
       <button
         v-for="e in emojis" :key="e.codigo" type="button"
-        :disabled="souAutor || !!minhaReacao || enviando"
+        :disabled="trancado || souAutor || !!minhaReacao || enviando"
         :title="e.descricao || e.nome"
         class="flex items-center gap-2 rounded-lg border-2 border-tinta px-3 py-2 transition
                disabled:cursor-default"
-        :class="minhaReacao === e.codigo
-          ? 'bg-amarelo shadow-blocoP'
-          : (contagem[e.codigo]?.length ? 'bg-roxo/45' : 'bg-cartao enabled:hover:bg-amarelo enabled:hover:shadow-blocoP')"
+        :class="[
+          minhaReacao === e.codigo
+            ? 'bg-amarelo shadow-blocoP'
+            : (contagem[e.codigo]?.length ? 'bg-roxo/45' : 'bg-cartao enabled:hover:bg-amarelo enabled:hover:shadow-blocoP'),
+          trancado && !contagem[e.codigo]?.length ? 'opacity-45' : '',
+        ]"
         @click="emit('reagir', e.codigo)"
       >
         <span class="text-xl leading-none" aria-hidden="true">{{ EMOJI_REACAO[e.codigo] ?? "✨" }}</span>
@@ -42,7 +48,10 @@ const contagem = computed(() => {
       </button>
     </div>
 
-    <p v-if="reacoes.length" class="font-marca text-lg text-fumaca mt-3">
+    <p v-if="trancado" class="font-marca text-lg text-fumaca mt-3">
+      esse dia já fechou — as reações estão trancadas
+    </p>
+    <p v-else-if="reacoes.length" class="font-marca text-lg text-fumaca mt-3">
       leram: {{ reacoes.map(r => r.profiles?.nome ?? 'alguém').join(', ') }}
     </p>
   </div>

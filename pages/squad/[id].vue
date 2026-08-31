@@ -688,28 +688,11 @@ function jaConfirmei(f: any) {
 
             <div class="chumbo mt-6 pt-5">
               <BarraReacoes
-                v-if="diaAberto(p)"
                 :emojis="emojis" :reacoes="p.post_reactions ?? []"
                 :meu-id="perfil?.id ?? ''" :sou-autor="p.autor_id === perfil?.id"
+                :trancado="!diaAberto(p)"
                 @reagir="(c) => reagirEm(p.id, c)"
               />
-
-              <div v-else>
-                <span class="rotulo">reações deste dia</span>
-                <div class="flex flex-wrap gap-2 mt-2">
-                  <span
-                    v-for="r in p.post_reactions" :key="r.id"
-                    class="flex items-center gap-2 rounded-lg border-2 border-tinta bg-cartao px-3 py-1.5"
-                    :title="r.profiles?.nome"
-                  >
-                    <span class="text-lg leading-none">{{ EMOJI_REACAO[r.emoji] ?? "✨" }}</span>
-                    <span class="text-xs font-bold">{{ r.profiles?.nome }}</span>
-                  </span>
-                </div>
-                <p class="font-marca text-lg text-fumaca mt-3">
-                  esse dia já fechou — as reações estão trancadas
-                </p>
-              </div>
 
               <div v-if="quemFalta(p).length" class="mt-3">
                 <p class="text-xs font-semibold text-fumaca">
